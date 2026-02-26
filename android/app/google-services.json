@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "774648478156",
+    "firebase_url": "https://monarch-of-shadows-default-rtdb.firebaseio.com",
+    "project_id": "monarch-of-shadows",
+    "storage_bucket": "monarch-of-shadows.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:774648478156:android:4fbb1056fdcea778220569",
+        "android_client_info": {
+          "package_name": "com.example.monarch_of_shadows"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDA5I_NB_mnx8Adjeft4YktjBdFqL_6cBw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

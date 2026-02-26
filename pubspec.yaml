@@ -1,0 +1,61 @@
+name: monarch
+description: "Sistema de gamificação estilo Solo Leveling"
+publish_to: 'none' # App privado
+
+version: 1.0.0
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  
+  # Firebase
+  firebase_core: ^3.8.1
+  firebase_auth: ^5.3.3
+  firebase_database: ^11.2.2
+  url_launcher: ^6.2.0
+
+   # Cache (Otimização)
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+  confetti: ^0.7.0
+  
+  # State Management
+  provider: ^6.1.1
+  
+  # UI & Charts
+  fl_chart: ^0.66.0
+  
+  # Utils
+  intl: ^0.18.1
+  shared_preferences: ^2.2.2
+
+  cupertino_icons: ^1.0.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.11.0
+
+flutter:
+
+  uses-material-design: true
+
+  assets:
+    - assets/images/rank/rank_e.jpg
+    - assets/images/rank/rank_d.jpg
+    - assets/images/rank/rank_c.jpg
+    - assets/images/rank/rank_b.jpg
+    - assets/images/rank/rank_a.jpg
+    - assets/images/rank/rank_s.jpg
+    - assets/images/rank/rank_ss.jpg
+    - assets/images/rank/rank_sss.jpg
+    - assets/logo.png   
+
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/logo.png"
