@@ -58,7 +58,7 @@ class DefaultFirebaseOptions {
     projectId: 'monarch-of-shadows',
     databaseURL: 'https://monarch-of-shadows-default-rtdb.firebaseio.com',
     storageBucket: 'monarch-of-shadows.firebasestorage.app',
-    iosBundleId: 'com.example.monarchOfShadows',
+    iosBundleId: 'com.dracoryx.app',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
@@ -68,7 +68,7 @@ class DefaultFirebaseOptions {
     projectId: 'monarch-of-shadows',
     databaseURL: 'https://monarch-of-shadows-default-rtdb.firebaseio.com',
     storageBucket: 'monarch-of-shadows.firebasestorage.app',
-    iosBundleId: 'com.example.monarchOfShadows',
+    iosBundleId: 'com.dracoryx.app',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(

@@ -38,7 +38,6 @@ class UserProvider with ChangeNotifier {
 
   // ================= CORE =================
 
-
   Future<void> loadUser({bool forceRefresh = false}) async {
     _isLoading = true;
 
@@ -122,7 +121,7 @@ class UserProvider with ChangeNotifier {
             receivedFirstUpdate = true;
             firstUpdateCompleter.complete();
             AppConstants.debugLog('✅ Primeiro update do stream recebido!');
-            
+
             _checkAndResetBestStreak(serverId, userId, user);
           }
 
@@ -156,23 +155,20 @@ class UserProvider with ChangeNotifier {
     AppConstants.debugLog(
         '✅ loadUser() completo - currentUser: ${_currentUser?.name ?? "null"}');
   }
-  
+
   Future<void> _checkAndResetBestStreak(
-    String serverId, 
-    String userId, 
-    UserModel user
+    String serverId,
+    String userId,
+    UserModel user,
   ) async {
     try {
       final streakService = StreakService.instance;
-      
       AppConstants.debugLog('🔍 Verificando se precisa resetar bestStreak...');
-      
       await streakService.checkAndResetStreakIfNeeded(
         serverId: serverId,
         userId: userId,
         currentUser: user,
       );
-      
       AppConstants.debugLog('✅ Verificação de streak concluída');
     } catch (e) {
       AppConstants.debugLog('⚠️ Erro ao verificar streak (não crítico): $e');
@@ -221,24 +217,20 @@ class UserProvider with ChangeNotifier {
   Future<void> logout() async {
     try {
       AppConstants.debugLog('🚪 Iniciando logout...');
-      
-      // Cancelar stream subscription
+
       await _userStreamSubscription?.cancel();
       _userStreamSubscription = null;
-      
-      // Limpar dados do usuário
+
       _currentUser = null;
       _currentServerId = null;
       _error = null;
       _isLoading = false;
       _isInitialLoad = true;
-      
-      // Fazer logout da autenticação (Firebase/Auth)
+
       await _authService.signOut();
-      
+
       AppConstants.debugLog('✅ Logout concluído com sucesso');
-      
-      // Notificar listeners
+
       notifyListeners();
     } catch (e) {
       AppConstants.debugLog('❌ Erro ao fazer logout: $e');
@@ -297,33 +289,30 @@ class UserProvider with ChangeNotifier {
   // ================= STREAK =================
 
   Future<void> updateStreak(int newStreak) async {
-  if (_currentUser == null || _currentServerId == null) return;
+    if (_currentUser == null || _currentServerId == null) return;
 
-  // ✅ Declarar variáveis primeiro
-  final oldStreak = _currentUser!.stats.currentStreak;
-  final oldBestStreak = _currentUser!.stats.bestStreak;
-  final newBestStreak = newStreak > oldBestStreak ? newStreak : oldBestStreak;
+    final oldStreak = _currentUser!.stats.currentStreak;
+    final oldBestStreak = _currentUser!.stats.bestStreak;
+    final newBestStreak = newStreak > oldBestStreak ? newStreak : oldBestStreak;
 
-  final newStats = _currentUser!.stats.copyWith(
-    currentStreak: newStreak,
-    bestStreak: newBestStreak,
-  );
+    final newStats = _currentUser!.stats.copyWith(
+      currentStreak: newStreak,
+      bestStreak: newBestStreak,
+    );
 
-  await updateUser({'stats': newStats.toMap()});
+    await updateUser({'stats': newStats.toMap()});
 
-  // ✅ Depois usar as variáveis
-  if (newStreak > oldStreak) {
-    AppConstants.debugLog('🔥 Streak atualizado: $oldStreak → $newStreak');
-    
-    // Verificar milestones
-    final milestones = [7, 15, 30];
-    for (final milestone in milestones) {
-      if (oldStreak < milestone && newStreak >= milestone) {
-        AppConstants.debugLog('🎉 Milestone atingido: $milestone dias!');
+    if (newStreak > oldStreak) {
+      AppConstants.debugLog('🔥 Streak atualizado: $oldStreak → $newStreak');
+
+      final milestones = [7, 15, 30];
+      for (final milestone in milestones) {
+        if (oldStreak < milestone && newStreak >= milestone) {
+          AppConstants.debugLog('🎉 Milestone atingido: $milestone dias!');
+        }
       }
     }
   }
-}
 
   // ================= LOGIN DIÁRIO =================
 
@@ -428,6 +417,26 @@ class UserProvider with ChangeNotifier {
 
   // ================= CACHE =================
 
+  /// FIX: invalida todas as chaves reais usadas pelo ranking_screen
+  void invalidateRankingCache() {
+    if (_currentServerId == null) return;
+
+    AppConstants.debugLog('🗑️ Invalidando cache do ranking...');
+
+    final serverId = _currentServerId!;
+
+    // Chaves usadas pelo ranking_screen
+    _cache.invalidate('ranking_${serverId}_top3');
+    _cache.invalidate('ranking_${serverId}_page1');
+
+    // Invalida posição do usuário logado
+    if (_currentUser != null) {
+      _cache.invalidate('ranking_position_${serverId}_${_currentUser!.id}');
+    }
+
+    AppConstants.debugLog('✅ Cache do ranking invalidado');
+  }
+
   void invalidateCache() {
     if (_currentUser == null || _currentServerId == null) return;
 
@@ -437,7 +446,9 @@ class UserProvider with ChangeNotifier {
 
     final date = DateFormat('yyyy-MM-dd').format(DateTime.now());
     _cache.invalidate('missions_${_currentServerId}_${_currentUser!.id}_$date');
-    _cache.invalidate('ranking_$_currentServerId');
+
+    // FIX: usa o método correto que invalida as chaves certas do ranking
+    invalidateRankingCache();
   }
 
   void clearUser() {
@@ -448,7 +459,7 @@ class UserProvider with ChangeNotifier {
     _error = null;
     notifyListeners();
   }
-  
+
   // ================= PROGRESSO =================
 
   int get xpForNextLevel {

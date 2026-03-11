@@ -1,4 +1,4 @@
-package com.example.monarch_of_shadows
+package com.dracoryx.app
 
 import io.flutter.embedding.android.FlutterActivity
 

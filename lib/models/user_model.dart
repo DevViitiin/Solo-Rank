@@ -10,6 +10,7 @@ class UserModel {
   final DateTime lastSeen;
   final UserStats stats;
   final bool terms;
+  final bool onboardingCompleted; // ← NOVO
 
   UserModel({
     required this.id,
@@ -23,6 +24,7 @@ class UserModel {
     required this.lastSeen,
     required this.stats,
     required this.terms,
+    this.onboardingCompleted = false, // ← NOVO (false por padrão)
   });
 
   /// Cria um novo usuário com valores padrão
@@ -30,21 +32,22 @@ class UserModel {
     required String id,
     required String name,
     required String email,
-    required bool terms, 
+    required bool terms,
   }) {
     final now = DateTime.now();
     return UserModel(
       id: id,
       name: name,
       email: email,
-      rank: 'E', // Todos começam no rank E
+      rank: 'E',
       level: 1,
       xp: 0,
       totalXp: 0,
       createdAt: now,
-      terms: terms, // 
+      terms: terms,
       lastSeen: now,
       stats: UserStats.initial(),
+      onboardingCompleted: false, // ← NOVO
     );
   }
 
@@ -59,8 +62,9 @@ class UserModel {
       'totalXp': totalXp,
       'createdAt': createdAt.toIso8601String(),
       'lastSeen': lastSeen.toIso8601String(),
-      'terms': terms, // 
+      'terms': terms,
       'stats': stats.toMap(),
+      'onboardingCompleted': onboardingCompleted, // ← NOVO
     };
   }
 
@@ -72,7 +76,7 @@ class UserModel {
         name: map['name']?.toString() ?? '',
         email: map['email']?.toString() ?? '',
         rank: map['rank']?.toString() ?? 'E',
-        terms: map['terms'] == true, 
+        terms: map['terms'] == true,
         level: _parseInt(map['level']) ?? 1,
         xp: _parseInt(map['xp']) ?? 0,
         totalXp: _parseInt(map['totalXp']) ?? 0,
@@ -81,10 +85,14 @@ class UserModel {
         stats: map['stats'] != null && map['stats'] is Map
             ? UserStats.fromMap(Map<String, dynamic>.from(map['stats'] as Map))
             : UserStats.initial(),
+        // Usuário já completou o onboarding se:
+        // 1. O campo existe e é true (novos usuários após o update), OU
+        // 2. Já tem XP (usuários antigos que nunca viram o campo)
+        onboardingCompleted: map['onboardingCompleted'] == true ||
+            (_parseInt(map['totalXp']) ?? 0) > 0,
       );
     } catch (e) {
       print('Erro ao criar UserModel: $e');
-      // Retorna um usuário padrão em caso de erro
       final now = DateTime.now();
       return UserModel(
         id: id,
@@ -98,11 +106,11 @@ class UserModel {
         terms: false,
         lastSeen: now,
         stats: UserStats.initial(),
+        onboardingCompleted: false,
       );
     }
   }
 
-  /// Converte valor para int de forma segura
   static int? _parseInt(dynamic value) {
     if (value == null) return null;
     if (value is int) return value;
@@ -111,7 +119,6 @@ class UserModel {
     return null;
   }
 
-  /// Converte valor para DateTime de forma segura
   static DateTime _parseDateTime(dynamic value) {
     if (value == null) return DateTime.now();
     if (value is String) {
@@ -124,7 +131,6 @@ class UserModel {
     return DateTime.now();
   }
 
-  /// Copia o modelo com alterações
   UserModel copyWith({
     String? name,
     String? email,
@@ -136,24 +142,29 @@ class UserModel {
     DateTime? lastSeen,
     UserStats? stats,
     bool? terms,
+    bool? onboardingCompleted, // ← NOVO
   }) {
     return UserModel(
       id: id,
       name: name ?? this.name,
       email: email ?? this.email,
       rank: rank ?? this.rank,
-      terms: terms ?? this.terms, 
+      terms: terms ?? this.terms,
       level: level ?? this.level,
       xp: xp ?? this.xp,
       totalXp: totalXp ?? this.totalXp,
       createdAt: createdAt ?? this.createdAt,
       lastSeen: lastSeen ?? this.lastSeen,
       stats: stats ?? this.stats,
+      onboardingCompleted: onboardingCompleted ?? this.onboardingCompleted, // ← NOVO
     );
   }
 }
 
-/// Estatísticas do usuário
+// =============================================================================
+// UserStats
+// =============================================================================
+
 class UserStats {
   final int currentStreak;
   final int bestStreak;
@@ -167,7 +178,6 @@ class UserStats {
     required this.attributes,
   });
 
-  /// Estatísticas iniciais
   factory UserStats.initial() {
     return UserStats(
       currentStreak: 0,
@@ -226,7 +236,10 @@ class UserStats {
   }
 }
 
-/// Atributos do usuário
+// =============================================================================
+// UserAttributes
+// =============================================================================
+
 class UserAttributes {
   final int study;
   final int discipline;
@@ -300,11 +313,8 @@ class UserAttributes {
     );
   }
 
-  /// Retorna o total de pontos de atributos
-  int get totalPoints =>
-      study + discipline + evolution + shape + habit;
+  int get totalPoints => study + discipline + evolution + shape + habit;
 
-  /// Retorna um Map para facilitar acesso por nome
   Map<String, int> toAttributeMap() {
     return {
       'study': study,

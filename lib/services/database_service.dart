@@ -205,7 +205,13 @@ class DatabaseService {
           // Atualizar stats individualmente
           final stats = value as Map<String, dynamic>;
           stats.forEach((statKey, statValue) {
-            updates['$userPath/stats/$statKey'] = statValue;
+            if (statKey == 'totalMissionsCompleted') {
+              // Usa incremento atômico do servidor — nunca perde contagem,
+              // mesmo com dados stale no cliente ou múltiplos usuários simultâneos
+              updates['$userPath/stats/$statKey'] = ServerValue.increment(1);
+            } else {
+              updates['$userPath/stats/$statKey'] = statValue;
+            }
           });
         } else {
           updates['$userPath/$key'] = value;
@@ -285,14 +291,49 @@ class DatabaseService {
   }
 
   /// Atualiza dados do usuário
+  ///
+  /// ⚠️ IMPORTANTE: quando `updates` contém a chave `'stats'`, este método
+  /// NUNCA faz replace do nó inteiro. Em vez disso expande os campos
+  /// individualmente, usando `ServerValue.increment(1)` para
+  /// `totalMissionsCompleted` — igual ao batch de missões.
+  ///
+  /// Isso evita que streak_service / attribute_manager_service sobrescrevam
+  /// o `totalMissionsCompleted` com o valor stale do `currentUser` que foi
+  /// carregado ANTES do batch de conclusão da missão.
   Future<void> updateUser(
     String serverId,
     String userId,
     Map<String, dynamic> updates,
   ) async {
     try {
-      updates['lastSeen'] = DateTime.now().toIso8601String();
-      await _serverUserRef(serverId, userId).update(updates);
+      final userPath = 'serverData/$serverId/users/$userId';
+      final flatUpdates = <String, dynamic>{};
+
+      updates.forEach((key, value) {
+        if (key == 'stats' && value is Map) {
+          // Expande stats campo a campo para não fazer replace do nó inteiro
+          (value as Map).forEach((statKey, statValue) {
+            if (statKey == 'totalMissionsCompleted') {
+              // NUNCA sobrescreve — o batch já usou ServerValue.increment(1).
+              // Qualquer chamada posterior (streak, atributos) deve ignorar
+              // este campo para não reverter o incremento.
+              // Não adicionamos nada aqui intencionalmente.
+            } else if (statKey == 'attributes' && statValue is Map) {
+              // Expande atributos individualmente também
+              (statValue as Map).forEach((attrKey, attrValue) {
+                flatUpdates['$userPath/stats/attributes/$attrKey'] = attrValue;
+              });
+            } else {
+              flatUpdates['$userPath/stats/$statKey'] = statValue;
+            }
+          });
+        } else {
+          flatUpdates['$userPath/$key'] = value;
+        }
+      });
+
+      flatUpdates['$userPath/lastSeen'] = DateTime.now().toIso8601String();
+      await _database.ref().update(flatUpdates);
     } catch (e) {
       throw Exception('Erro ao atualizar usuário: $e');
     }

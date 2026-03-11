@@ -1,0 +1,1363 @@
+{
+  "serverData": {
+    "server_2026_01": {
+      "dailyMissions": {
+        "rJKtxmWo6bTBLq7neaDdu9NBjRg2": {
+          "2026-03-10": {
+            "custom": {
+              "custom_1773179869439": {
+                "completed": false,
+                "name": "Ler 20 páginas",
+                "xp": 35
+              },
+              "custom_1773180505319": {
+                "completed": false,
+                "name": "Academia",
+                "xp": 35
+              }
+            }
+          }
+        }
+      },
+      "users": {
+        "rJKtxmWo6bTBLq7neaDdu9NBjRg2": {
+          "createdAt": "2026-03-10T18:52:34.616320",
+          "email": "kurosakicifer9@gmail.com",
+          "lastSeen": "2026-03-10T19:08:25.570695",
+          "level": 1,
+          "name": "Tester",
+          "onboardingCompleted": true,
+          "rank": "E",
+          "stats": {
+            "attributes": {
+              "discipline": 0,
+              "evolution": 0,
+              "habit": 0,
+              "shape": 0,
+              "study": 0
+            },
+            "bestStreak": 0,
+            "currentStreak": 0,
+            "totalMissionsCompleted": 0
+          },
+          "terms": true,
+          "totalXp": 0,
+          "xp": 0,
+          "schemaVersion": 2
+        }
+      }
+    },
+    "server_2026_02": {
+      "dailyMissions": {
+        "Hnj4dM0v96gNL18zEoGyFbbDEdm1": {
+          "2026-02-06": {
+            "custom": {
+              "custom_1770394126605": {
+                "completed": true,
+                "completedAt": 1770394986306,
+                "name": "atualizar snackbar de login acreen dados errados",
+                "xp": 35
+              },
+              "custom_1770394148718": {
+                "completed": true,
+                "completedAt": 1770396943581,
+                "name": "colocar particles em todas as telas do app",
+                "xp": 35
+              },
+              "custom_1770394496341": {
+                "completed": true,
+                "completedAt": 1770397742326,
+                "name": "corrigir cálculo de quanto o server tá sendo cheio",
+                "xp": 35
+              }
+            },
+            "fixed": {
+              "fixed_1770394015497": {
+                "completed": true,
+                "completedAt": 1770429034885,
+                "name": "Treino",
+                "xp": 60,
+                "recurrence": null
+              },
+              "fixed_1770394022246": {
+                "completed": true,
+                "completedAt": 1770429037968,
+                "name": "Finalizar app",
+                "xp": 60,
+                "recurrence": null
+              },
+              "fixed_1770394039192": {
+                "completed": true,
+                "completedAt": 1770411578124,
+                "name": "Ler a bíblia",
+                "xp": 60,
+                "recurrence": null
+              },
+              "fixed_1770394046024": {
+                "completed": true,
+                "completedAt": 1770429032571,
+                "name": "Ir ao culto",
+                "xp": 60,
+                "recurrence": null
+              },
+              "fixed_1770394090247": {
+                "completed": true,
+                "completedAt": 1770429033342,
+                "name": "Ajustar site",
+                "xp": 60,
+                "recurrence": null
+              }
+            }
+          },
+          "2026-02-07": {
+            "custom": {
+              "custom_1770484078616": {
+                "completed": true,
+                "completedAt": 1770484079884,
+                "name": "rs",
+                "xp": 240
+              }
+            }
+          },
+          "2026-02-08": {
+            "custom": {
+              "custom_1770588837746": {
+                "completed": true,
+                "completedAt": 1770588839580,
+                "name": "Finalizar o app",
+                "xp": 105
+              }
+            },
+            "fixed": {
+              "fixed_1770588830200": {
+                "completed": true,
+                "completedAt": 1770588854628,
+                "name": "Programar",
+                "xp": 200,
+                "recurrence": null
+              }
+            }
+          },
+          "2026-02-09": {
+            "fixed": {
+              "fixed_1770674905485": {
+                "completed": true,
+                "completedAt": 1770674949194,
+                "name": "Estudar Enem bloco 1",
+                "xp": 60,
+                "recurrence": null
+              },
+              "fixed_1770674913734": {
+                "completed": false,
+                "name": "Estudar Enem bloco 2",
+                "xp": 60,
+                "recurrence": null
+              },
+              "fixed_1770674920083": {
+                "completed": true,
+                "completedAt": 1770674951992,
+                "name": "Programar",
+                "xp": 60,
+                "recurrence": null
+              },
+              "fixed_1770674926447": {
+                "completed": true,
+                "completedAt": 1770674944407,
+                "name": "Estudar inglês",
+                "xp": 60,
+                "recurrence": null
+              },
+              "fixed_1770674938012": {
+                "completed": false,
+                "name": "Ir dormir no horário correto",
+                "xp": 60,
+                "recurrence": null
+              }
+            }
+          },
+          "2026-02-11": {
+            "fixed": {
+              "fixed_1770862367753": {
+                "completed": true,
+                "completedAt": 1770862372933,
+                "name": "estudar inglês",
+                "xp": 60,
+                "recurrence": null
+              }
+            }
+          },
+          "2026-02-17": {
+            "fixed": {
+              "fixed_1771359552912": {
+                "completed": true,
+                "completedAt": 1771360126199,
+                "name": "estudar inglês",
+                "xp": 60,
+                "recurrence": null
+              }
+            }
+          },
+          "2026-02-18": {
+            "custom": {
+              "custom_1771420155781": {
+                "completed": true,
+                "completedAt": 1771420157268,
+                "name": "estudar aritmética basica",
+                "xp": 110
+              }
+            },
+            "fixed": {
+              "fixed_1771420197354": {
+                "completed": true,
+                "completedAt": 1771420198622,
+                "name": "Estudar matemática",
+                "xp": 220,
+                "recurrence": null
+              },
+              "fixed_1771420284925": {
+                "completed": true,
+                "completedAt": 1771420286042,
+                "name": "Estudar inglês",
+                "xp": 230,
+                "recurrence": null
+              }
+            }
+          }
+        },
+        "twnmQTUz8TT1xSZz4kuafz2mJz22": {
+          "2026-03-03": {
+            "custom": {
+              "custom_1772578549997": {
+                "completed": true,
+                "completedAt": 1772578551690,
+                "name": "Ler 1 Capítulo do Livro",
+                "xp": 35
+              },
+              "custom_1772578800654": {
+                "completed": true,
+                "completedAt": 1772578802019,
+                "name": "Limpar a pica",
+                "xp": 35
+              },
+              "custom_1772579033895": {
+                "completed": true,
+                "completedAt": 1772579036044,
+                "name": "Treino: Peito",
+                "xp": 35
+              }
+            }
+          }
+        },
+        "vO1BP4TZCGPqrhH6r9Kxu1nmiht1": {
+          "2026-02-20": {
+            "custom": {
+              "custom_1771619176558": {
+                "completed": true,
+                "completedAt": 1771619178364,
+                "name": "terminar o mão de obra",
+                "xp": 35
+              },
+              "custom_1771619202122": {
+                "completed": true,
+                "completedAt": 1771619204327,
+                "name": "terminar o nivex",
+                "xp": 35
+              },
+              "custom_1771619245652": {
+                "completed": true,
+                "completedAt": 1771619247273,
+                "name": "terminar o tabu",
+                "xp": 35
+              }
+            },
+            "fixed": {
+              "fixed_1771619154384": {
+                "completed": true,
+                "completedAt": 1771619294426,
+                "name": "Atualizar projetos",
+                "xp": 60,
+                "recurrence": null
+              },
+              "fixed_1771619267208": {
+                "completed": false,
+                "name": "treinar",
+                "xp": 60,
+                "recurrence": null
+              },
+              "fixed_1771619288614": {
+                "completed": false,
+                "name": "cumprir todos os 7 hábitos",
+                "xp": 60,
+                "recurrence": null
+              }
+            }
+          },
+          "2026-02-21": {
+            "custom": {
+              "custom_1771676010007": {
+                "completed": true,
+                "completedAt": 1771702485739,
+                "name": "Terminar o tabu",
+                "xp": 35
+              },
+              "custom_1771676588860": {
+                "completed": true,
+                "completedAt": 1771676592818,
+                "name": "arrumar as cores",
+                "xp": 35
+              },
+              "custom_1771702518346": {
+                "completed": true,
+                "completedAt": 1771702520437,
+                "name": "terminar a primeira versão da Arcanjo",
+                "xp": 40
+              }
+            },
+            "fixed": {
+              "fixed_1771675986496": {
+                "completed": true,
+                "completedAt": 1771676019598,
+                "name": "Atualizar o site atual",
+                "xp": 60,
+                "recurrence": null
+              },
+              "fixed_1771675994394": {
+                "completed": true,
+                "completedAt": 1771702481430,
+                "name": "Treinar",
+                "xp": 60,
+                "recurrence": null
+              },
+              "fixed_1771702536081": {
+                "completed": true,
+                "completedAt": 1771724655236,
+                "name": "Arrumar outro projeto",
+                "xp": 70,
+                "recurrence": null
+              },
+              "fixed_1771724669574": {
+                "completed": true,
+                "completedAt": 1771724672031,
+                "name": "atualizar o projeto atual",
+                "xp": 70,
+                "recurrence": null
+              },
+              "fixed_1771724696257": {
+                "completed": false,
+                "name": "atualizar o projeto atual",
+                "xp": 70,
+                "recurrence": null
+              }
+            }
+          },
+          "2026-02-22": {
+            "fixed": {
+              "fixed_1771798468893": {
+                "completed": true,
+                "completedAt": 1771798471298,
+                "name": "achar um projeto",
+                "xp": 70,
+                "recurrence": null
+              }
+            }
+          },
+          "2026-03-04": {
+            "fixed": {
+              "fixed_1772618832085": {
+                "completed": false,
+                "name": "treinar até sentir o músculo ardendo",
+                "xp": 70,
+                "recurrence": null
+              }
+            }
+          },
+          "2026-03-05": {
+            "fixed": {
+              "fixed_1772708911376": {
+                "completed": false,
+                "name": "treinar 4 séries do primeiro exercício de peito",
+                "xp": 70,
+                "recurrence": null
+              }
+            }
+          }
+        }
+      },
+      "transactions": {
+        "Hnj4dM0v96gNL18zEoGyFbbDEdm1": {
+          "discipline_5fixed_Hnj4dM0v96gNL18zEoGyFbbDEdm1_2026-02-06": {
+            "actionData": {
+              "date": "2026-02-06",
+              "fixedCount": 5
+            },
+            "actionType": "discipline_bonus_5fixed",
+            "executed": true,
+            "result": {
+              "discipline": 2
+            },
+            "timestamp": 1770429038813
+          },
+          "discipline_all_fixed_Hnj4dM0v96gNL18zEoGyFbbDEdm1_2026-02-11": {
+            "actionData": {
+              "bonus": 2,
+              "date": "2026-02-11"
+            },
+            "actionType": "discipline_all_fixed",
+            "executed": true,
+            "result": {
+              "discipline": 2
+            },
+            "timestamp": 1770862373977
+          },
+          "discipline_all_fixed_Hnj4dM0v96gNL18zEoGyFbbDEdm1_2026-02-17": {
+            "actionData": {
+              "bonus": 2,
+              "date": "2026-02-17"
+            },
+            "actionType": "discipline_all_fixed",
+            "executed": true,
+            "result": {
+              "discipline": 80
+            },
+            "timestamp": 1771360127340
+          },
+          "discipline_all_fixed_Hnj4dM0v96gNL18zEoGyFbbDEdm1_2026-02-18": {
+            "actionData": {
+              "bonus": 2,
+              "date": "2026-02-18"
+            },
+            "actionType": "discipline_all_fixed",
+            "executed": true,
+            "result": {
+              "discipline": 80
+            },
+            "timestamp": 1771420199701
+          },
+          "habit_all_custom_Hnj4dM0v96gNL18zEoGyFbbDEdm1_2026-02-18": {
+            "actionData": {
+              "bonus": 2,
+              "date": "2026-02-18"
+            },
+            "actionType": "habit_all_custom",
+            "executed": true,
+            "result": {
+              "habit": 99
+            },
+            "timestamp": 1771420158367
+          },
+          "habit_all_fixed_Hnj4dM0v96gNL18zEoGyFbbDEdm1_2026-02-11": {
+            "actionData": {
+              "bonus": 1,
+              "date": "2026-02-11"
+            },
+            "actionType": "habit_all_fixed",
+            "executed": true,
+            "result": {
+              "habit": 1
+            },
+            "timestamp": 1770862374719
+          },
+          "habit_all_fixed_Hnj4dM0v96gNL18zEoGyFbbDEdm1_2026-02-17": {
+            "actionData": {
+              "bonus": 1,
+              "date": "2026-02-17"
+            },
+            "actionType": "habit_all_fixed",
+            "executed": true,
+            "result": {
+              "habit": 97
+            },
+            "timestamp": 1771360127901
+          },
+          "habit_all_fixed_Hnj4dM0v96gNL18zEoGyFbbDEdm1_2026-02-18": {
+            "actionData": {
+              "bonus": 1,
+              "date": "2026-02-18"
+            },
+            "actionType": "habit_all_fixed",
+            "executed": true,
+            "result": {
+              "habit": 98
+            },
+            "timestamp": 1771420200224
+          },
+          "levelup_evolution_Hnj4dM0v96gNL18zEoGyFbbDEdm1_17": {
+            "actionData": {
+              "newLevel": 17,
+              "oldLevel": 16
+            },
+            "actionType": "evolution_levelup",
+            "executed": true,
+            "result": {
+              "evolution": 85
+            },
+            "timestamp": 1771420158945
+          },
+          "levelup_evolution_Hnj4dM0v96gNL18zEoGyFbbDEdm1_18": {
+            "actionData": {
+              "newLevel": 18,
+              "oldLevel": 17
+            },
+            "actionType": "evolution_levelup",
+            "executed": true,
+            "result": {
+              "evolution": 86
+            },
+            "timestamp": 1771420200748
+          },
+          "levelup_evolution_Hnj4dM0v96gNL18zEoGyFbbDEdm1_2": {
+            "actionData": {
+              "newLevel": 2,
+              "oldLevel": 1
+            },
+            "actionType": "evolution_levelup",
+            "executed": true,
+            "result": {
+              "evolution": 1
+            },
+            "timestamp": 1770429034062
+          },
+          "levelup_evolution_Hnj4dM0v96gNL18zEoGyFbbDEdm1_21": {
+            "actionData": {
+              "newLevel": 21,
+              "oldLevel": 20
+            },
+            "actionType": "evolution_levelup",
+            "executed": true,
+            "result": {
+              "evolution": 91
+            },
+            "timestamp": 1771420287160
+          },
+          "rankup_evolution_Hnj4dM0v96gNL18zEoGyFbbDEdm1_S": {
+            "actionData": {
+              "newRank": "S",
+              "oldRank": "A"
+            },
+            "actionType": "evolution_rankup",
+            "executed": true,
+            "result": {
+              "evolution": 5
+            },
+            "timestamp": 1770484080652
+          },
+          "rankup_evolution_Hnj4dM0v96gNL18zEoGyFbbDEdm1_SS": {
+            "actionData": {
+              "newRank": "SS",
+              "oldRank": "S"
+            },
+            "actionType": "evolution_rankup",
+            "executed": true,
+            "result": {
+              "evolution": 90
+            },
+            "timestamp": 1771420201284
+          },
+          "shape_Hnj4dM0v96gNL18zEoGyFbbDEdm1_fixed_1770394015497_2026-02-06": {
+            "actionData": {
+              "date": "2026-02-06",
+              "missionId": "fixed_1770394015497",
+              "missionName": "Treino"
+            },
+            "actionType": "shape_mission",
+            "executed": true,
+            "result": {
+              "shape": 1
+            },
+            "timestamp": 1770429035455
+          },
+          "study_Hnj4dM0v96gNL18zEoGyFbbDEdm1_custom_1771420155781_2026-02-18": {
+            "actionData": {
+              "date": "2026-02-18",
+              "missionId": "custom_1771420155781",
+              "missionName": "estudar aritmética basica"
+            },
+            "actionType": "study_mission",
+            "executed": true,
+            "result": {
+              "study": 68
+            },
+            "timestamp": 1771420157801
+          },
+          "study_Hnj4dM0v96gNL18zEoGyFbbDEdm1_fixed_1770394039192_2026-02-06": {
+            "actionData": {
+              "date": "2026-02-06",
+              "missionId": "fixed_1770394039192",
+              "missionName": "Ler a bíblia"
+            },
+            "actionType": "study_mission",
+            "executed": true,
+            "result": {
+              "study": 1
+            },
+            "timestamp": 1770411578615
+          },
+          "study_Hnj4dM0v96gNL18zEoGyFbbDEdm1_fixed_1770674905485_2026-02-09": {
+            "actionData": {
+              "date": "2026-02-09",
+              "missionId": "fixed_1770674905485",
+              "missionName": "Estudar Enem bloco 1"
+            },
+            "actionType": "study_mission",
+            "executed": true,
+            "result": {
+              "study": 2
+            },
+            "timestamp": 1770674949750
+          },
+          "study_Hnj4dM0v96gNL18zEoGyFbbDEdm1_fixed_1770674926447_2026-02-09": {
+            "actionData": {
+              "date": "2026-02-09",
+              "missionId": "fixed_1770674926447",
+              "missionName": "Estudar inglês"
+            },
+            "actionType": "study_mission",
+            "executed": true,
+            "result": {
+              "study": 1
+            },
+            "timestamp": 1770674944929
+          },
+          "study_Hnj4dM0v96gNL18zEoGyFbbDEdm1_fixed_1770862367753_2026-02-11": {
+            "actionData": {
+              "date": "2026-02-11",
+              "missionId": "fixed_1770862367753",
+              "missionName": "estudar inglês"
+            },
+            "actionType": "study_mission",
+            "executed": true,
+            "result": {
+              "study": 3
+            },
+            "timestamp": 1770862373455
+          },
+          "study_Hnj4dM0v96gNL18zEoGyFbbDEdm1_fixed_1771359552912_2026-02-17": {
+            "actionData": {
+              "date": "2026-02-17",
+              "missionId": "fixed_1771359552912",
+              "missionName": "estudar inglês"
+            },
+            "actionType": "study_mission",
+            "executed": true,
+            "result": {
+              "study": 68
+            },
+            "timestamp": 1771360126752
+          },
+          "study_Hnj4dM0v96gNL18zEoGyFbbDEdm1_fixed_1771420197354_2026-02-18": {
+            "actionData": {
+              "date": "2026-02-18",
+              "missionId": "fixed_1771420197354",
+              "missionName": "Estudar matemática"
+            },
+            "actionType": "study_mission",
+            "executed": true,
+            "result": {
+              "study": 68
+            },
+            "timestamp": 1771420199159
+          },
+          "study_Hnj4dM0v96gNL18zEoGyFbbDEdm1_fixed_1771420284925_2026-02-18": {
+            "actionData": {
+              "date": "2026-02-18",
+              "missionId": "fixed_1771420284925",
+              "missionName": "Estudar inglês"
+            },
+            "actionType": "study_mission",
+            "executed": true,
+            "result": {
+              "study": 68
+            },
+            "timestamp": 1771420286586
+          }
+        },
+        "twnmQTUz8TT1xSZz4kuafz2mJz22": {
+          "habit_3_custom_twnmQTUz8TT1xSZz4kuafz2mJz22_2026-03-03": {
+            "actionData": {
+              "bonus": 1,
+              "date": "2026-03-03"
+            },
+            "actionType": "habit_3_custom",
+            "executed": true,
+            "result": {
+              "habit": 3
+            },
+            "timestamp": 1772579037693
+          },
+          "habit_all_custom_twnmQTUz8TT1xSZz4kuafz2mJz22_2026-03-03": {
+            "actionData": {
+              "bonus": 2,
+              "date": "2026-03-03"
+            },
+            "actionType": "habit_all_custom",
+            "executed": true,
+            "result": {
+              "habit": 2
+            },
+            "timestamp": 1772578553131
+          },
+          "shape_twnmQTUz8TT1xSZz4kuafz2mJz22_custom_1772579033895_2026-03-03": {
+            "actionData": {
+              "date": "2026-03-03",
+              "missionId": "custom_1772579033895",
+              "missionName": "Treino: Peito"
+            },
+            "actionType": "shape_mission",
+            "executed": true,
+            "result": {
+              "shape": 1
+            },
+            "timestamp": 1772579036765
+          },
+          "study_twnmQTUz8TT1xSZz4kuafz2mJz22_custom_1772578549997_2026-03-03": {
+            "actionData": {
+              "date": "2026-03-03",
+              "missionId": "custom_1772578549997",
+              "missionName": "Ler 1 Capítulo do Livro"
+            },
+            "actionType": "study_mission",
+            "executed": true,
+            "result": {
+              "study": 1
+            },
+            "timestamp": 1772578552311
+          }
+        },
+        "vO1BP4TZCGPqrhH6r9Kxu1nmiht1": {
+          "levelup_evolution_vO1BP4TZCGPqrhH6r9Kxu1nmiht1_2": {
+            "actionData": {
+              "newLevel": 2,
+              "oldLevel": 1
+            },
+            "actionType": "evolution_levelup",
+            "executed": true,
+            "result": {
+              "evolution": 1
+            },
+            "timestamp": 1771676593638
+          },
+          "shape_vO1BP4TZCGPqrhH6r9Kxu1nmiht1_fixed_1771675994394_2026-02-21": {
+            "actionData": {
+              "date": "2026-02-21",
+              "missionId": "fixed_1771675994394",
+              "missionName": "Treinar"
+            },
+            "actionType": "shape_mission",
+            "executed": true,
+            "result": {
+              "shape": 1
+            },
+            "timestamp": 1771702482275
+          },
+          "study_vO1BP4TZCGPqrhH6r9Kxu1nmiht1_fixed_1771619154384_2026-02-20": {
+            "actionData": {
+              "date": "2026-02-20",
+              "missionId": "fixed_1771619154384",
+              "missionName": "Atualizar projetos"
+            },
+            "actionType": "study_mission",
+            "executed": true,
+            "result": {
+              "study": 1
+            },
+            "timestamp": 1771619295116
+          },
+          "study_vO1BP4TZCGPqrhH6r9Kxu1nmiht1_fixed_1771702536081_2026-02-21": {
+            "actionData": {
+              "date": "2026-02-21",
+              "missionId": "fixed_1771702536081",
+              "missionName": "Arrumar outro projeto"
+            },
+            "actionType": "study_mission",
+            "executed": true,
+            "result": {
+              "study": 2
+            },
+            "timestamp": 1771724655871
+          },
+          "study_vO1BP4TZCGPqrhH6r9Kxu1nmiht1_fixed_1771724669574_2026-02-21": {
+            "actionData": {
+              "date": "2026-02-21",
+              "missionId": "fixed_1771724669574",
+              "missionName": "atualizar o projeto atual"
+            },
+            "actionType": "study_mission",
+            "executed": true,
+            "result": {
+              "study": 3
+            },
+            "timestamp": 1771724672602
+          },
+          "study_vO1BP4TZCGPqrhH6r9Kxu1nmiht1_fixed_1771798468893_2026-02-22": {
+            "actionData": {
+              "date": "2026-02-22",
+              "missionId": "fixed_1771798468893",
+              "missionName": "achar um projeto"
+            },
+            "actionType": "study_mission",
+            "executed": true,
+            "result": {
+              "study": 4
+            },
+            "timestamp": 1771798472057
+          }
+        }
+      },
+      "users": {
+        "Hnj4dM0v96gNL18zEoGyFbbDEdm1": {
+          "createdAt": "2026-02-06T12:52:34.946352",
+          "email": "viitiinmec@gmail.com",
+          "lastSeen": "2026-02-26T16:58:13.288969",
+          "level": 21,
+          "name": "MONARCA",
+          "rank": "SS",
+          "stats": {
+            "attributes": {
+              "discipline": 100,
+              "evolution": 100,
+              "habit": 100,
+              "shape": 100,
+              "study": 100
+            },
+            "bestStreak": 0,
+            "currentStreak": 0,
+            "totalMissionsCompleted": 80
+          },
+          "terms": true,
+          "totalXp": 34230,
+          "xp": 33500,
+          "schemaVersion": 2
+        },
+        "twnmQTUz8TT1xSZz4kuafz2mJz22": {
+          "createdAt": "2026-03-03T19:54:17.304104",
+          "email": "contatomaxwell.br@gmail.com",
+          "lastSeen": "2026-03-03T20:03:57.914010",
+          "level": 1,
+          "name": "Comedor de Victor",
+          "rank": "E",
+          "stats": {
+            "attributes": {
+              "discipline": 0,
+              "evolution": 0,
+              "habit": 3,
+              "shape": 0,
+              "study": 0
+            },
+            "bestStreak": 0,
+            "currentStreak": 0,
+            "totalMissionsCompleted": 1
+          },
+          "terms": true,
+          "totalXp": 105,
+          "xp": 0,
+          "schemaVersion": 2
+        },
+        "vO1BP4TZCGPqrhH6r9Kxu1nmiht1": {
+          "createdAt": "2026-02-06T18:03:34.456687",
+          "email": "samuk3206@gmail.com",
+          "lastSeen": "2026-02-22T19:14:32.418661",
+          "level": 2,
+          "name": "samuka0",
+          "rank": "E",
+          "stats": {
+            "attributes": {
+              "discipline": 0,
+              "evolution": 1,
+              "habit": 0,
+              "shape": 1,
+              "study": 4
+            },
+            "bestStreak": 0,
+            "currentStreak": 0,
+            "totalMissionsCompleted": 6
+          },
+          "terms": true,
+          "totalXp": 605,
+          "xp": 0,
+          "schemaVersion": 2
+        }
+      }
+    },
+    "server_2026_03": {
+      "dailyMissions": {
+        "9FjjykOmlHUJt9vFnTjuYmgROu52": {
+          "2026-03-06": {
+            "fixed": {
+              "fixed_1772799686475": {
+                "completed": false,
+                "name": "Ajustar minhas falas",
+                "xp": 60,
+                "recurrence": null
+              }
+            }
+          }
+        },
+        "BgpRzntchKYpXB44iyh1bF8yxht2": {
+          "2026-03-10": {
+            "custom": {
+              "custom_1773179496880": {
+                "completed": false,
+                "name": "Estudar 1 hora",
+                "xp": 35
+              }
+            }
+          }
+        },
+        "RMFsdUFNBMNqH6RxqP1RvtQsVIi2": {
+          "2026-03-05": {
+            "fixed": {
+              "fixed_1772753680032": {
+                "completed": true,
+                "completedAt": 1772753682337,
+                "name": "sksksk",
+                "xp": 60,
+                "recurrence": null
+              }
+            }
+          }
+        },
+        "Usop1XRaV0V8i55gX72rFcbkJfX2": {
+          "2026-03-10": {
+            "custom": {
+              "custom_1773165478507": {
+                "completed": false,
+                "name": "chute voador",
+                "xp": 35
+              }
+            },
+            "fixed": {
+              "fixed_1773165423996": {
+                "completed": true,
+                "completedAt": 1773165491158,
+                "name": "praticar 1 hora",
+                "xp": 60,
+                "recurrence": null
+              },
+              "fixed_1773165457202": {
+                "completed": true,
+                "completedAt": 1773165499078,
+                "name": "treino calistenia",
+                "xp": 60,
+                "recurrence": null
+              }
+            }
+          }
+        },
+        "giEuVmRWMggjcfNJNxqpa7ZfvDI3": {
+          "2026-03-06": {
+            "custom": {
+              "custom_1772799688611": {
+                "completed": true,
+                "completedAt": 1772799722122,
+                "name": "trabalhar hj",
+                "xp": 35
+              }
+            },
+            "fixed": {
+              "fixed_1772799805499": {
+                "completed": true,
+                "completedAt": 1772799810274,
+                "name": "acordar",
+                "xp": 60,
+                "recurrence": null
+              }
+            }
+          }
+        },
+        "nBziuuXuUvNAAXdjXVbVVYzWcZa2": {
+          "2026-03-08": {
+            "fixed": {
+              "fixed_1772977954523": {
+                "completed": true,
+                "completedAt": 1772977956727,
+                "name": "treino capoeira",
+                "xp": 60,
+                "recurrence": null
+              }
+            }
+          }
+        }
+      },
+      "transactions": {
+        "RMFsdUFNBMNqH6RxqP1RvtQsVIi2": {
+          "discipline_all_fixed_RMFsdUFNBMNqH6RxqP1RvtQsVIi2_2026-03-05": {
+            "actionData": {
+              "bonus": 2,
+              "date": "2026-03-05"
+            },
+            "actionType": "discipline_all_fixed",
+            "executed": true,
+            "result": {
+              "discipline": 2
+            },
+            "timestamp": 1772753682894
+          },
+          "habit_all_fixed_RMFsdUFNBMNqH6RxqP1RvtQsVIi2_2026-03-05": {
+            "actionData": {
+              "bonus": 1,
+              "date": "2026-03-05"
+            },
+            "actionType": "habit_all_fixed",
+            "executed": true,
+            "result": {
+              "habit": 1
+            },
+            "timestamp": 1772753683444
+          }
+        },
+        "Usop1XRaV0V8i55gX72rFcbkJfX2": {
+          "discipline_all_fixed_Usop1XRaV0V8i55gX72rFcbkJfX2_2026-03-10": {
+            "actionData": {
+              "bonus": 2,
+              "date": "2026-03-10"
+            },
+            "actionType": "discipline_all_fixed",
+            "executed": true,
+            "result": {
+              "discipline": 2
+            },
+            "timestamp": 1773165500206
+          },
+          "habit_all_fixed_Usop1XRaV0V8i55gX72rFcbkJfX2_2026-03-10": {
+            "actionData": {
+              "bonus": 1,
+              "date": "2026-03-10"
+            },
+            "actionType": "habit_all_fixed",
+            "executed": true,
+            "result": {
+              "habit": 1
+            },
+            "timestamp": 1773165500775
+          },
+          "shape_Usop1XRaV0V8i55gX72rFcbkJfX2_fixed_1773165457202_2026-03-10": {
+            "actionData": {
+              "date": "2026-03-10",
+              "missionId": "fixed_1773165457202",
+              "missionName": "treino calistenia"
+            },
+            "actionType": "shape_mission",
+            "executed": true,
+            "result": {
+              "shape": 1
+            },
+            "timestamp": 1773165499658
+          }
+        },
+        "giEuVmRWMggjcfNJNxqpa7ZfvDI3": {
+          "discipline_all_fixed_giEuVmRWMggjcfNJNxqpa7ZfvDI3_2026-03-06": {
+            "actionData": {
+              "bonus": 2,
+              "date": "2026-03-06"
+            },
+            "actionType": "discipline_all_fixed",
+            "executed": true,
+            "result": {
+              "discipline": 2
+            },
+            "timestamp": 1772799811137
+          },
+          "habit_all_custom_giEuVmRWMggjcfNJNxqpa7ZfvDI3_2026-03-06": {
+            "actionData": {
+              "bonus": 2,
+              "date": "2026-03-06"
+            },
+            "actionType": "habit_all_custom",
+            "executed": true,
+            "result": {
+              "habit": 2
+            },
+            "timestamp": 1772799722878
+          },
+          "habit_all_fixed_giEuVmRWMggjcfNJNxqpa7ZfvDI3_2026-03-06": {
+            "actionData": {
+              "bonus": 1,
+              "date": "2026-03-06"
+            },
+            "actionType": "habit_all_fixed",
+            "executed": true,
+            "result": {
+              "habit": 3
+            },
+            "timestamp": 1772799811831
+          }
+        },
+        "nBziuuXuUvNAAXdjXVbVVYzWcZa2": {
+          "discipline_all_fixed_nBziuuXuUvNAAXdjXVbVVYzWcZa2_2026-03-08": {
+            "actionData": {
+              "bonus": 2,
+              "date": "2026-03-08"
+            },
+            "actionType": "discipline_all_fixed",
+            "executed": true,
+            "result": {
+              "discipline": 2
+            },
+            "timestamp": 1772977957747
+          },
+          "habit_all_fixed_nBziuuXuUvNAAXdjXVbVVYzWcZa2_2026-03-08": {
+            "actionData": {
+              "bonus": 1,
+              "date": "2026-03-08"
+            },
+            "actionType": "habit_all_fixed",
+            "executed": true,
+            "result": {
+              "habit": 1
+            },
+            "timestamp": 1772977958716
+          },
+          "shape_nBziuuXuUvNAAXdjXVbVVYzWcZa2_fixed_1772977954523_2026-03-08": {
+            "actionData": {
+              "date": "2026-03-08",
+              "missionId": "fixed_1772977954523",
+              "missionName": "treino capoeira"
+            },
+            "actionType": "shape_mission",
+            "executed": true,
+            "result": {
+              "shape": 1
+            },
+            "timestamp": 1772977957231
+          }
+        }
+      },
+      "users": {
+        "5ybWDaVlOfc7GgxgpBGb69EJUzw2": {
+          "createdAt": "2026-03-05T20:11:34.014586",
+          "email": "contatoadrianruanbr@gmail.com",
+          "lastSeen": "2026-03-05T20:11:34.014586",
+          "level": 1,
+          "name": "Adrian",
+          "rank": "E",
+          "stats": {
+            "attributes": {
+              "discipline": 0,
+              "evolution": 0,
+              "habit": 0,
+              "shape": 0,
+              "study": 0
+            },
+            "bestStreak": 0,
+            "currentStreak": 0,
+            "totalMissionsCompleted": 0
+          },
+          "terms": true,
+          "totalXp": 0,
+          "xp": 0,
+          "schemaVersion": 2
+        },
+        "9FjjykOmlHUJt9vFnTjuYmgROu52": {
+          "createdAt": "2026-03-03T19:52:01.690526",
+          "email": "seletadelegumes@gmail.com",
+          "lastSeen": "2026-03-03T19:52:01.690526",
+          "level": 1,
+          "name": "Seleto",
+          "rank": "E",
+          "stats": {
+            "attributes": {
+              "discipline": 0,
+              "evolution": 0,
+              "habit": 0,
+              "shape": 0,
+              "study": 0
+            },
+            "bestStreak": 0,
+            "currentStreak": 0,
+            "totalMissionsCompleted": 0
+          },
+          "terms": true,
+          "totalXp": 0,
+          "xp": 0,
+          "schemaVersion": 2
+        },
+        "BgpRzntchKYpXB44iyh1bF8yxht2": {
+          "createdAt": "2026-03-10T18:38:06.793654",
+          "email": "sukunamec@gmail.com",
+          "lastSeen": "2026-03-10T18:38:06.793654",
+          "level": 1,
+          "name": "Spike",
+          "rank": "E",
+          "stats": {
+            "attributes": {
+              "discipline": 0,
+              "evolution": 0,
+              "habit": 0,
+              "shape": 0,
+              "study": 0
+            },
+            "bestStreak": 0,
+            "currentStreak": 0,
+            "totalMissionsCompleted": 0
+          },
+          "terms": true,
+          "totalXp": 0,
+          "xp": 0,
+          "schemaVersion": 2
+        },
+        "RMFsdUFNBMNqH6RxqP1RvtQsVIi2": {
+          "createdAt": "2026-03-05T20:33:53.978665",
+          "email": "eduardobateman43@gmail.com",
+          "lastSeen": "2026-03-05T20:35:04.530961",
+          "level": 1,
+          "name": "Edvardo",
+          "rank": "E",
+          "stats": {
+            "attributes": {
+              "discipline": 0,
+              "evolution": 0,
+              "habit": 1,
+              "shape": 0,
+              "study": 0
+            },
+            "bestStreak": 1,
+            "currentStreak": 0,
+            "totalMissionsCompleted": 0
+          },
+          "terms": true,
+          "totalXp": 60,
+          "xp": 0,
+          "schemaVersion": 2
+        },
+        "Usop1XRaV0V8i55gX72rFcbkJfX2": {
+          "createdAt": "2026-03-10T14:56:14.906592",
+          "email": "marcoscassianooliveira07@gmail.com",
+          "lastSeen": "2026-03-10T14:58:37.765674",
+          "level": 1,
+          "name": "solador",
+          "rank": "E",
+          "stats": {
+            "attributes": {
+              "discipline": 0,
+              "evolution": 0,
+              "habit": 1,
+              "shape": 0,
+              "study": 0
+            },
+            "bestStreak": 1,
+            "currentStreak": 0,
+            "totalMissionsCompleted": 1
+          },
+          "terms": true,
+          "totalXp": 120,
+          "xp": 0,
+          "schemaVersion": 2
+        },
+        "giEuVmRWMggjcfNJNxqpa7ZfvDI3": {
+          "createdAt": "2026-03-05T20:35:47.213449",
+          "email": "kenedyb277@gmail.com",
+          "lastSeen": "2026-03-06T09:23:52.765752",
+          "level": 1,
+          "name": "Jhon Kenedy",
+          "rank": "E",
+          "stats": {
+            "attributes": {
+              "discipline": 0,
+              "evolution": 0,
+              "habit": 3,
+              "shape": 0,
+              "study": 0
+            },
+            "bestStreak": 1,
+            "currentStreak": 0,
+            "totalMissionsCompleted": 0
+          },
+          "terms": true,
+          "totalXp": 95,
+          "xp": 0,
+          "schemaVersion": 2
+        },
+        "nBziuuXuUvNAAXdjXVbVVYzWcZa2": {
+          "createdAt": "2026-03-08T10:51:10.451492",
+          "email": "Paulohenrique89280@gmail.com",
+          "lastSeen": "2026-03-08T10:52:55.894831",
+          "level": 1,
+          "name": "ReiReilly",
+          "rank": "E",
+          "stats": {
+            "attributes": {
+              "discipline": 0,
+              "evolution": 0,
+              "habit": 1,
+              "shape": 0,
+              "study": 0
+            },
+            "bestStreak": 1,
+            "currentStreak": 0,
+            "totalMissionsCompleted": 0
+          },
+          "terms": true,
+          "totalXp": 60,
+          "xp": 0,
+          "schemaVersion": 2
+        }
+      }
+    }
+  },
+  "servers": {
+    "BRASIL": {
+      "users": {
+        "vO1BP4TZCGPqrhH6r9Kxu1nmiht1": {
+          "attributes": {
+            "agility": 5,
+            "charisma": 5,
+            "intelligence": 5,
+            "luck": 5,
+            "resistance": 5,
+            "strength": 5
+          },
+          "availablePoints": 0,
+          "completedMissions": 0,
+          "createdAt": 1772673629843,
+          "level": 1,
+          "name": "samuk3206",
+          "totalXP": 0,
+          "updatedAt": 1772673629420,
+          "xp": 0,
+          "xpNextLevel": 1000
+        }
+      }
+    },
+    "server_2026_01": {
+      "maxPlayers": 1000,
+      "name": "Servidor Janeiro 2026",
+      "openDate": "2026-01-01T00:00:00Z",
+      "playerCount": 1,
+      "status": "active"
+    },
+    "server_2026_02": {
+      "maxPlayers": 1000,
+      "name": "Servidor Fevereiro 2026",
+      "openDate": "2026-02-01T00:00:00.000",
+      "playerCount": 3,
+      "status": "active"
+    },
+    "server_2026_03": {
+      "maxPlayers": 1000,
+      "name": "Servidor Março 2026",
+      "openDate": "2026-03-01T00:00:00.000",
+      "playerCount": 7,
+      "status": "active"
+    }
+  },
+  "userServers": {
+    "5ybWDaVlOfc7GgxgpBGb69EJUzw2": "server_2026_03",
+    "9FjjykOmlHUJt9vFnTjuYmgROu52": "server_2026_03",
+    "BgpRzntchKYpXB44iyh1bF8yxht2": "server_2026_03",
+    "Hnj4dM0v96gNL18zEoGyFbbDEdm1": "server_2026_02",
+    "RMFsdUFNBMNqH6RxqP1RvtQsVIi2": "server_2026_03",
+    "Usop1XRaV0V8i55gX72rFcbkJfX2": "server_2026_03",
+    "giEuVmRWMggjcfNJNxqpa7ZfvDI3": "server_2026_03",
+    "nBziuuXuUvNAAXdjXVbVVYzWcZa2": "server_2026_03",
+    "rJKtxmWo6bTBLq7neaDdu9NBjRg2": "server_2026_01",
+    "twnmQTUz8TT1xSZz4kuafz2mJz22": "server_2026_02",
+    "vO1BP4TZCGPqrhH6r9Kxu1nmiht1": "server_2026_02"
+  },
+  "migrations": {
+    "v2_recurrence": {
+      "version": 2,
+      "migratedAt": 1773182237943,
+      "description": "Campo recurrence adicionado nas missões fixas"
+    }
+  }
+}

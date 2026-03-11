@@ -311,7 +311,7 @@ class _LoginScreenState extends State<LoginScreen>
           shaderCallback: (bounds) =>
               _theme.primaryGradient.createShader(bounds),
           child: const Text(
-            'Nivex',
+            'Dracoryx',
             style: TextStyle(
               fontSize: 36,
               fontWeight: FontWeight.w900,

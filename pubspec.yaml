@@ -2,7 +2,7 @@ name: monarch
 description: "Sistema de gamificação estilo Solo Leveling"
 publish_to: 'none' # App privado
 
-version: 1.0.0
+version: 1.0.0+2
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
@@ -45,14 +45,14 @@ flutter:
   uses-material-design: true
 
   assets:
-    - assets/images/rank/rank_e.jpg
-    - assets/images/rank/rank_d.jpg
-    - assets/images/rank/rank_c.jpg
-    - assets/images/rank/rank_b.jpg
-    - assets/images/rank/rank_a.jpg
-    - assets/images/rank/rank_s.jpg
-    - assets/images/rank/rank_ss.jpg
-    - assets/images/rank/rank_sss.jpg
+    - assets/images/rank/rank_e.png
+    - assets/images/rank/rank_d.png
+    - assets/images/rank/rank_c.png
+    - assets/images/rank/rank_b.png
+    - assets/images/rank/rank_a.png
+    - assets/images/rank/rank_s.png
+    - assets/images/rank/rank_ss.png
+    - assets/images/rank/rank_sss.png
     - assets/logo.png   
 
 flutter_icons:
