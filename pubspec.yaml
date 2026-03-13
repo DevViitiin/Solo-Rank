@@ -2,7 +2,7 @@ name: monarch
 description: "Sistema de gamificação estilo Solo Leveling"
 publish_to: 'none' # App privado
 
-version: 1.0.0+2
+version: 1.0.0+5
 
 environment:
   sdk: '>=3.0.0 <4.0.0'

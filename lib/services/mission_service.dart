@@ -72,7 +72,7 @@ class MissionService {
       await init(serverId, userId);
     }
 
-    final date = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    final date = DatabaseService.todayKey;
 
     debugPrint('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     debugPrint('🎯 TOGGLE MISSÃO V14: ${mission.name}');
@@ -151,7 +151,7 @@ class MissionService {
         'name': mission.name,
         'xp': mission.xp,
         'completed': true,
-        'completedAt': DateTime.now().millisecondsSinceEpoch,
+        'completedAt': DatabaseService.now.millisecondsSinceEpoch,
       };
 
       // Adicionar categoria se for custom
@@ -163,7 +163,7 @@ class MissionService {
         'totalXp': newTotalXp,
         'level': newLevel,
         'rank': newRank,
-        'lastSeen': DateTime.now().toIso8601String(),
+        'lastSeen': DatabaseService.now.toIso8601String(),
         'stats': {
           'totalMissionsCompleted': newMissionCount,
         },

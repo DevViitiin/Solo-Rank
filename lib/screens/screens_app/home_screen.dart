@@ -6,6 +6,7 @@ import 'package:monarch/providers/user_provider.dart';
 import 'package:monarch/models/mission_model.dart';
 import 'package:monarch/screens/screens_app/animated_particles.dart';
 import 'package:monarch/screens/screens_init/login_screen.dart';
+import 'package:monarch/screens/screens_app/tutorial_guide.dart';
 import 'package:monarch/services/database_service.dart';
 import 'package:monarch/services/cache_service.dart';
 import 'package:monarch/services/streak_service.dart';
@@ -456,7 +457,57 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   ],
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 10),
+              // Botão Tutorial — pill com ícone + label
+              GestureDetector(
+                onTap: () => showTutorialGuide(context),
+                child: AnimatedBuilder(
+                  animation: _glowAnimation,
+                  builder: (context, child) => Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          theme.primary.withOpacity(0.22),
+                          theme.accent.withOpacity(0.12),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(22),
+                      border: Border.all(
+                        color: theme.primary.withOpacity(0.55),
+                        width: 1.5,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: theme.primary.withOpacity(0.28 * _glowAnimation.value),
+                          blurRadius: 16,
+                          spreadRadius: 1,
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.menu_book_rounded, color: theme.primary, size: 16),
+                        const SizedBox(width: 6),
+                        Text(
+                          'GUIA',
+                          style: TextStyle(
+                            color: theme.primary,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 1.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              // Botão Logout
               GestureDetector(
                 onTap: () => _showLogoutDialog(theme),
                 child: AnimatedBuilder(

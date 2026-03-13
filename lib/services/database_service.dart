@@ -1,3 +1,4 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
 import '../models/user_model.dart';
 import '../models/server_model.dart';
@@ -6,21 +7,38 @@ import '../constants/app_constants.dart';
 import 'cache_service.dart';
 import 'dart:async';
 
-/// 🚀 DATABASE SERVICE V12 - ULTRA OPTIMIZED
+/// 🚀 DATABASE SERVICE
 ///
-/// ✅ OTIMIZAÇÕES PRINCIPAIS:
-/// 1. **Real-Time Streams** - Eliminam 95% dos reads
-/// 2. **Batch Atômico** - 1 write ao invés de 5+
-/// 3. **Cache Inteligente** - Apenas para dados estáticos
-/// 4. **Sem Polling** - Firebase push automático
+/// ──────────────────────────────────────────────
+/// COMO TESTAR RECORRÊNCIAS EM DATAS DIFERENTES:
 ///
-/// 💰 ECONOMIA:
-/// - Antes: ~15 reads por missão
-/// - Depois: ~1 read (setup listener) + 0 reads subsequentes
-/// - **Redução: 90-95% nas requisições**
+///   DatabaseService.testDate = DateTime(2026, 3, 20); // simular data
+///   DatabaseService.testDate = null;                  // voltar ao normal
+///
+/// Coloque no main.dart antes do runApp().
+/// ──────────────────────────────────────────────
 class DatabaseService {
   final FirebaseDatabase _database = FirebaseDatabase.instance;
   final _cache = CacheService.instance;
+
+  // =========================================================================
+  // 📅 FONTE ÚNICA DE DATA — usada em TODO o app
+  // =========================================================================
+
+  /// Defina para simular uma data. null = data real.
+  static DateTime? testDate;
+
+  /// Use DatabaseService.now em qualquer lugar que precisar da data atual.
+  static DateTime get now => testDate ?? DateTime.now();
+
+  /// Data de hoje no formato yyyy-MM-dd (respeita testDate).
+  static String get todayKey {
+    final d = now;
+    return '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+  }
+
+  static String formatDate(DateTime date) =>
+      '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
 
   // =========================================================================
   // STREAM CONTROLLERS
@@ -50,135 +68,79 @@ class DatabaseService {
           String serverId, String userId, String date) =>
       _serverDataRef(serverId).child('dailyMissions').child(userId).child(date);
 
+  DatabaseReference _fixedTemplatesRef(String serverId, String userId) =>
+      _serverDataRef(serverId).child('fixedMissionTemplates').child(userId);
+
   // =========================================================================
-  // 🔥 STREAMS EM TEMPO REAL (NOVIDADE!)
+  // 🔥 STREAMS EM TEMPO REAL
   // =========================================================================
 
-  /// 🎯 Stream do usuário - Atualiza automaticamente quando dados mudam
-  ///
-  /// **USO:**
-  /// ```dart
-  /// _dbService.getUserStream(serverId, userId).listen((user) {
-  ///   // Atualiza automaticamente! Zero polling!
-  /// });
-  /// ```
   Stream<UserModel?> getUserStream(String serverId, String userId) {
     final key = '${serverId}_$userId';
-
-    // Reusar stream se já existe
     if (_userStreamControllers.containsKey(key)) {
       return _userStreamControllers[key]!.stream;
     }
 
-    // Criar novo stream controller
     final controller = StreamController<UserModel?>.broadcast(
-      onCancel: () {
-        AppConstants.debugLog('🗑️ Stream cancelado: user_$key');
-        _userStreamControllers.remove(key);
-      },
+      onCancel: () => _userStreamControllers.remove(key),
     );
-
     _userStreamControllers[key] = controller;
 
-    // Listener do Firebase
-    final ref = _serverUserRef(serverId, userId);
-
-    ref.onValue.listen(
+    _serverUserRef(serverId, userId).onValue.listen(
       (event) {
         if (!event.snapshot.exists || event.snapshot.value == null) {
           controller.add(null);
           return;
         }
-
         try {
           final data = Map<String, dynamic>.from(event.snapshot.value as Map);
-          final user = UserModel.fromMap(userId, data);
-
-          AppConstants.debugLog(
-              '📡 Stream update: ${user.name} (XP: ${user.totalXp})');
-          controller.add(user);
+          controller.add(UserModel.fromMap(userId, data));
         } catch (e) {
-          AppConstants.debugLog('❌ Erro ao processar stream user: $e');
           controller.addError(e);
         }
       },
-      onError: (error) {
-        AppConstants.debugLog('❌ Erro no stream user: $error');
-        controller.addError(error);
-      },
+      onError: controller.addError,
     );
-
     return controller.stream;
   }
 
-  /// 🎯 Stream de missões diárias - Atualiza automaticamente
   Stream<Map<String, dynamic>?> getDailyMissionsStream(
     String serverId,
     String userId,
     String date,
   ) {
     final key = '${serverId}_${userId}_$date';
-
-    // Reusar stream se já existe
     if (_missionsStreamControllers.containsKey(key)) {
       return _missionsStreamControllers[key]!.stream;
     }
 
-    // Criar novo stream controller
     final controller = StreamController<Map<String, dynamic>?>.broadcast(
-      onCancel: () {
-        AppConstants.debugLog('🗑️ Stream cancelado: missions_$key');
-        _missionsStreamControllers.remove(key);
-      },
+      onCancel: () => _missionsStreamControllers.remove(key),
     );
-
     _missionsStreamControllers[key] = controller;
 
-    // Listener do Firebase
-    final ref = _dailyMissionsRef(serverId, userId, date);
-
-    ref.onValue.listen(
+    _dailyMissionsRef(serverId, userId, date).onValue.listen(
       (event) {
         if (!event.snapshot.exists || event.snapshot.value == null) {
           controller.add(null);
           return;
         }
-
         try {
           final data = Map<String, dynamic>.from(event.snapshot.value as Map);
-
-          AppConstants.debugLog(
-              '📡 Stream update: ${data.keys.length} categorias de missões');
           controller.add(data);
         } catch (e) {
-          AppConstants.debugLog('❌ Erro ao processar stream missions: $e');
           controller.addError(e);
         }
       },
-      onError: (error) {
-        AppConstants.debugLog('❌ Erro no stream missions: $error');
-        controller.addError(error);
-      },
+      onError: controller.addError,
     );
-
     return controller.stream;
   }
 
   // =========================================================================
-  // 🔥 BATCH ATÔMICO - 1 WRITE AO INVÉS DE 5+
+  // 🔥 BATCH ATÔMICO
   // =========================================================================
 
-  /// ⚡ Atualiza missão E usuário em UMA ÚNICA operação atômica
-  ///
-  /// **ANTES (5+ writes):**
-  /// - updateMission()
-  /// - updateXP()
-  /// - updateLevel()
-  /// - updateRank()
-  /// - updateAttributes()
-  ///
-  /// **DEPOIS (1 write):**
-  /// - updateMissionAndUserBatch()
   Future<void> updateMissionAndUserBatch({
     required String serverId,
     required String userId,
@@ -191,23 +153,18 @@ class DatabaseService {
     try {
       final updates = <String, dynamic>{};
 
-      // 1. Missão
       final missionPath =
           'serverData/$serverId/dailyMissions/$userId/$date/$missionType/$missionId';
       missionData.forEach((key, value) {
         updates['$missionPath/$key'] = value;
       });
 
-      // 2. Usuário
       final userPath = 'serverData/$serverId/users/$userId';
       userData.forEach((key, value) {
         if (key == 'stats') {
-          // Atualizar stats individualmente
           final stats = value as Map<String, dynamic>;
           stats.forEach((statKey, statValue) {
             if (statKey == 'totalMissionsCompleted') {
-              // Usa incremento atômico do servidor — nunca perde contagem,
-              // mesmo com dados stale no cliente ou múltiplos usuários simultâneos
               updates['$userPath/stats/$statKey'] = ServerValue.increment(1);
             } else {
               updates['$userPath/stats/$statKey'] = statValue;
@@ -218,9 +175,7 @@ class DatabaseService {
         }
       });
 
-      // 3. Executar TUDO de uma vez (atômico!)
       await _database.ref().update(updates);
-
       AppConstants.debugLog(
           '✅ Batch update: 1 write para ${updates.length} campos');
     } catch (e) {
@@ -230,12 +185,189 @@ class DatabaseService {
   }
 
   // =========================================================================
-  // OPERAÇÕES LEGACY (MANTIDAS PARA COMPATIBILIDADE)
+  // ✅ TEMPLATES DE MISSÕES FIXAS RECORRENTES
   // =========================================================================
 
-  /// Busca usuário do servidor (apenas para compatibilidade)
+  Future<String> saveFixedMissionTemplate({
+    required String serverId,
+    required String userId,
+    required String missionName,
+    required int xpBase,
+    required MissionRecurrence recurrence,
+  }) async {
+    try {
+      final missionId = 'fixed_${DatabaseService.now.millisecondsSinceEpoch}';
+      final templateData = {
+        'name': missionName,
+        'xp_base': xpBase,
+        'recurrence': recurrence.toMap(),
+        'createdAt': DatabaseService.now.millisecondsSinceEpoch,
+        'active': true,
+      };
+
+      await _fixedTemplatesRef(serverId, userId)
+          .child(missionId)
+          .set(templateData);
+      AppConstants.debugLog('✅ Template salvo: $missionName ($missionId)');
+      return missionId;
+    } catch (e) {
+      AppConstants.debugLog('❌ Erro ao salvar template: $e');
+      throw Exception('Erro ao salvar template: $e');
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getFixedMissionTemplates({
+    required String serverId,
+    required String userId,
+  }) async {
+    try {
+      final snapshot = await _fixedTemplatesRef(serverId, userId).get();
+      if (!snapshot.exists || snapshot.value == null) return [];
+
+      final templatesMap = Map<String, dynamic>.from(snapshot.value as Map);
+      final templates = <Map<String, dynamic>>[];
+
+      templatesMap.forEach((id, value) {
+        if (value is Map) {
+          final data = Map<String, dynamic>.from(value);
+          if (data['active'] == true) {
+            templates.add({'id': id, ...data});
+          }
+        }
+      });
+
+      AppConstants.debugLog('📋 ${templates.length} templates encontrados');
+      return templates;
+    } catch (e) {
+      AppConstants.debugLog('❌ Erro ao buscar templates: $e');
+      return [];
+    }
+  }
+
+  Future<void> deactivateFixedMissionTemplate({
+    required String serverId,
+    required String userId,
+    required String missionId,
+  }) async {
+    try {
+      await _fixedTemplatesRef(serverId, userId)
+          .child(missionId)
+          .update({'active': false});
+      AppConstants.debugLog('🗑️ Template desativado: $missionId');
+    } catch (e) {
+      AppConstants.debugLog('❌ Erro ao desativar template: $e');
+      throw Exception('Erro ao desativar template: $e');
+    }
+  }
+
+  /// Propaga missões recorrentes para [date].
   ///
-  /// **RECOMENDADO:** Use getUserStream() ao invés deste método
+  /// Para cada template ativo:
+  ///   1. Verifica se [date] está dentro do período (startDate ≤ date ≤ endDate)
+  ///   2. Verifica se é um dos dias da semana configurados
+  ///   3. Se ainda não existe neste dia → cria com completed: false (fresh)
+  ///
+  /// Isso garante que uma missão concluída ontem reaparece hoje do zero.
+  Future<int> propagateRecurringMissionsToDay({
+    required String serverId,
+    required String userId,
+    required String date,
+    required int userLevel,
+  }) async {
+    try {
+      AppConstants.debugLog(
+          '🔄 Propagando missões recorrentes para $date (level $userLevel)...');
+
+      final templates = await getFixedMissionTemplates(
+        serverId: serverId,
+        userId: userId,
+      );
+
+      if (templates.isEmpty) {
+        AppConstants.debugLog('   Nenhum template encontrado.');
+        return 0;
+      }
+
+      // IDs que já existem neste dia (não duplicar)
+      final existingSnapshot = await _dailyMissionsRef(serverId, userId, date)
+          .child('fixed')
+          .get();
+
+      final existingIds = <String>{};
+      if (existingSnapshot.exists && existingSnapshot.value != null) {
+        final existing =
+            Map<String, dynamic>.from(existingSnapshot.value as Map);
+        existingIds.addAll(existing.keys);
+      }
+
+      final targetDate = DateTime.parse(date);
+      final updates = <String, dynamic>{};
+      int propagated = 0;
+
+      for (final template in templates) {
+        final missionId = template['id'] as String;
+
+        // Já existe neste dia? Pula (pode estar completa ou não — não interessa)
+        if (existingIds.contains(missionId)) {
+          AppConstants.debugLog('   ↩️ Já existe neste dia: $missionId');
+          continue;
+        }
+
+        MissionRecurrence recurrence;
+        try {
+          recurrence = MissionRecurrence.fromMap(
+            Map<String, dynamic>.from(template['recurrence'] as Map),
+          );
+        } catch (e) {
+          AppConstants.debugLog(
+              '   ⚠️ Recorrência inválida em $missionId: $e');
+          continue;
+        }
+
+        // Verifica período (startDate ≤ targetDate ≤ endDate) + dia da semana
+        if (!recurrence.isActiveOn(targetDate)) {
+          AppConstants.debugLog(
+              '   ⏭️ Inativo neste dia/período: ${template['name']}');
+          continue;
+        }
+
+        final xp = _calculateFixedMissionXp(userLevel);
+
+        final missionPath =
+            'serverData/$serverId/dailyMissions/$userId/$date/fixed/$missionId';
+        updates[missionPath] = {
+          'name': template['name'],
+          'xp': xp,
+          'completed': false,
+          'recurrence': template['recurrence'],
+        };
+
+        propagated++;
+        AppConstants.debugLog(
+            '   ✅ Propagando: ${template['name']} (+$xp XP)');
+      }
+
+      if (updates.isNotEmpty) {
+        await _database.ref().update(updates);
+        AppConstants.debugLog(
+            '✅ $propagated missão(ões) propagada(s) para $date');
+      } else {
+        AppConstants.debugLog('   Nenhuma missão nova para propagar em $date.');
+      }
+
+      return propagated;
+    } catch (e) {
+      AppConstants.debugLog('❌ Erro ao propagar missões: $e');
+      return 0;
+    }
+  }
+
+  int _calculateFixedMissionXp(int userLevel) => 50 + (userLevel * 10);
+
+  // =========================================================================
+  // OPERAÇÕES PRINCIPAIS
+  // =========================================================================
+
   Future<UserModel?> getUserFromServer(
     String serverId,
     String userId, {
@@ -243,11 +375,7 @@ class DatabaseService {
   }) async {
     try {
       final snapshot = await _serverUserRef(serverId, userId).get();
-
-      if (!snapshot.exists || snapshot.value == null) {
-        return null;
-      }
-
+      if (!snapshot.exists || snapshot.value == null) return null;
       final data = Map<String, dynamic>.from(snapshot.value as Map);
       return UserModel.fromMap(userId, data);
     } catch (e) {
@@ -256,7 +384,6 @@ class DatabaseService {
     }
   }
 
-  /// Busca servidor do usuário
   Future<String?> getUserServer(String userId,
       {bool forceRefresh = false}) async {
     try {
@@ -268,21 +395,15 @@ class DatabaseService {
     }
   }
 
-  /// Busca missões diárias (apenas para compatibilidade)
-  ///
-  /// **RECOMENDADO:** Use getDailyMissionsStream() ao invés deste método
   Future<Map<String, dynamic>?> getDailyMissions(
     String serverId,
     String userId,
     String date,
   ) async {
     try {
-      final snapshot = await _dailyMissionsRef(serverId, userId, date).get();
-
-      if (!snapshot.exists || snapshot.value == null) {
-        return null;
-      }
-
+      final snapshot =
+          await _dailyMissionsRef(serverId, userId, date).get();
+      if (!snapshot.exists || snapshot.value == null) return null;
       return Map<String, dynamic>.from(snapshot.value as Map);
     } catch (e) {
       AppConstants.debugLog('❌ Erro ao buscar missões: $e');
@@ -290,16 +411,6 @@ class DatabaseService {
     }
   }
 
-  /// Atualiza dados do usuário
-  ///
-  /// ⚠️ IMPORTANTE: quando `updates` contém a chave `'stats'`, este método
-  /// NUNCA faz replace do nó inteiro. Em vez disso expande os campos
-  /// individualmente, usando `ServerValue.increment(1)` para
-  /// `totalMissionsCompleted` — igual ao batch de missões.
-  ///
-  /// Isso evita que streak_service / attribute_manager_service sobrescrevam
-  /// o `totalMissionsCompleted` com o valor stale do `currentUser` que foi
-  /// carregado ANTES do batch de conclusão da missão.
   Future<void> updateUser(
     String serverId,
     String userId,
@@ -311,15 +422,10 @@ class DatabaseService {
 
       updates.forEach((key, value) {
         if (key == 'stats' && value is Map) {
-          // Expande stats campo a campo para não fazer replace do nó inteiro
           (value as Map).forEach((statKey, statValue) {
             if (statKey == 'totalMissionsCompleted') {
-              // NUNCA sobrescreve — o batch já usou ServerValue.increment(1).
-              // Qualquer chamada posterior (streak, atributos) deve ignorar
-              // este campo para não reverter o incremento.
-              // Não adicionamos nada aqui intencionalmente.
+              // ignorado — batch usa ServerValue.increment
             } else if (statKey == 'attributes' && statValue is Map) {
-              // Expande atributos individualmente também
               (statValue as Map).forEach((attrKey, attrValue) {
                 flatUpdates['$userPath/stats/attributes/$attrKey'] = attrValue;
               });
@@ -332,14 +438,13 @@ class DatabaseService {
         }
       });
 
-      flatUpdates['$userPath/lastSeen'] = DateTime.now().toIso8601String();
+      flatUpdates['$userPath/lastSeen'] = DatabaseService.now.toIso8601String();
       await _database.ref().update(flatUpdates);
     } catch (e) {
       throw Exception('Erro ao atualizar usuário: $e');
     }
   }
 
-  /// Atualiza uma missão específica
   Future<void> updateDailyMission({
     required String serverId,
     required String userId,
@@ -349,17 +454,121 @@ class DatabaseService {
     required Map<String, dynamic> missionData,
   }) async {
     try {
-      final ref = _dailyMissionsRef(serverId, userId, date)
+      await _dailyMissionsRef(serverId, userId, date)
           .child(missionType)
-          .child(missionId);
-
-      await ref.update(missionData);
+          .child(missionId)
+          .update(missionData);
     } catch (e) {
       throw Exception('Erro ao atualizar missão: $e');
     }
   }
 
-  /// Criar usuário no servidor
+  Future<String> addCustomMission({
+    required String serverId,
+    required String userId,
+    required String date,
+    required String missionName,
+    required int xp,
+    String missionType = 'custom',
+    Map<String, dynamic>? extraData,
+  }) async {
+    try {
+      final prefix = missionType == 'fixed' ? 'fixed' : 'custom';
+      final missionId =
+          '${prefix}_${DatabaseService.now.millisecondsSinceEpoch}';
+
+      final data = <String, dynamic>{
+        'name': missionName,
+        'xp': xp,
+        'completed': false,
+        ...?extraData,
+      };
+
+      await _dailyMissionsRef(serverId, userId, date)
+          .child(missionType)
+          .child(missionId)
+          .set(data);
+
+      AppConstants.debugLog(
+          '✅ Missão $missionType adicionada: $missionName ($missionId)');
+      return missionId;
+    } catch (e) {
+      AppConstants.debugLog('❌ Erro ao adicionar missão: $e');
+      throw Exception('Erro ao adicionar missão: $e');
+    }
+  }
+
+  Future<void> removeCustomMission({
+    required String serverId,
+    required String userId,
+    required String date,
+    required String missionId,
+    required String missionType,
+  }) async {
+    try {
+      await _dailyMissionsRef(serverId, userId, date)
+          .child(missionType)
+          .child(missionId)
+          .remove();
+      AppConstants.debugLog('✅ Missão removida: $missionId');
+    } catch (e) {
+      AppConstants.debugLog('❌ Erro ao remover missão: $e');
+      throw Exception('Erro ao remover missão: $e');
+    }
+  }
+
+  Future<void> deleteDailyMission({
+    required String serverId,
+    required String userId,
+    required String date,
+    required String missionType,
+    required String missionId,
+  }) async {
+    return removeCustomMission(
+      serverId: serverId,
+      userId: userId,
+      date: date,
+      missionId: missionId,
+      missionType: missionType,
+    );
+  }
+
+  Future<void> editMission({
+    required String serverId,
+    required String userId,
+    required String date,
+    required String missionId,
+    required String missionType,
+    required String newName,
+    required int newXp,
+  }) async {
+    try {
+      await _dailyMissionsRef(serverId, userId, date)
+          .child(missionType)
+          .child(missionId)
+          .update({'name': newName, 'xp': newXp});
+      AppConstants.debugLog('✅ Missão editada: $missionId');
+    } catch (e) {
+      AppConstants.debugLog('❌ Erro ao editar missão: $e');
+      throw Exception('Erro ao editar missão: $e');
+    }
+  }
+
+  void dispose() {
+    for (final controller in _userStreamControllers.values) {
+      controller.close();
+    }
+    for (final controller in _missionsStreamControllers.values) {
+      controller.close();
+    }
+    _userStreamControllers.clear();
+    _missionsStreamControllers.clear();
+  }
+
+  // =========================================================================
+  // SERVIDORES E RANKING
+  // =========================================================================
+
   Future<void> createUserInServer({
     required String userId,
     required String userName,
@@ -376,30 +585,42 @@ class DatabaseService {
       );
 
       final updates = <String, dynamic>{};
-
-      // Dados do usuário
       final userPath = 'serverData/$serverId/users/$userId';
+
       newUser.toMap().forEach((key, value) {
-        updates['$userPath/$key'] = value;
+        if (key == 'stats' && value is Map) {
+          (value as Map<String, dynamic>).forEach((statKey, statValue) {
+            if (statKey == 'attributes' && statValue is Map) {
+              (statValue as Map<String, dynamic>).forEach((attrKey, attrValue) {
+                updates['$userPath/stats/attributes/$attrKey'] = attrValue;
+              });
+            } else {
+              updates['$userPath/stats/$statKey'] = statValue;
+            }
+          });
+        } else {
+          updates['$userPath/$key'] = value;
+        }
       });
 
-      // Mapeamento
       updates['userServers/$userId'] = serverId;
 
       await _database.ref().update(updates);
 
-      // Incrementar contador
       final counterRef = _serversRef.child(serverId).child('playerCount');
       await counterRef.runTransaction((currentValue) {
         final current = currentValue as int? ?? 0;
         return Transaction.success(current + 1);
       });
     } catch (e) {
+      AppConstants.debugLog('❌ Erro ao criar usuário no servidor: $e');
+      if (e is FirebaseException) {
+        AppConstants.debugLog('   Firebase code: ${e.code}');
+      }
       throw Exception('Erro ao criar usuário: $e');
     }
   }
 
-  /// Busca servidores ativos (usa cache de 6 horas)
   Future<List<ServerModel>> getActiveServers(
       {bool forceRefresh = false}) async {
     try {
@@ -409,7 +630,6 @@ class DatabaseService {
         forceRefresh: forceRefresh,
         fetchFunction: () => _fetchActiveServers(),
       );
-
       return result ?? [];
     } catch (e) {
       return [];
@@ -418,10 +638,7 @@ class DatabaseService {
 
   Future<List<ServerModel>> _fetchActiveServers() async {
     final snapshot = await _serversRef.get();
-
-    if (!snapshot.exists || snapshot.value == null) {
-      return [];
-    }
+    if (!snapshot.exists || snapshot.value == null) return [];
 
     final servers = <ServerModel>[];
     final serversMap = Map<String, dynamic>.from(snapshot.value as Map);
@@ -443,15 +660,13 @@ class DatabaseService {
     return servers;
   }
 
-  /// Garantir servidor do mês
   Future<void> ensureCurrentMonthServer() async {
     try {
-      final now = DateTime.now();
+      final now = DatabaseService.now;
       final serverId =
           'server_${now.year}_${now.month.toString().padLeft(2, '0')}';
 
       final snapshot = await _serversRef.child(serverId).get();
-
       if (!snapshot.exists) {
         await _serversRef.child(serverId).set({
           'name': 'Servidor ${_getMonthName(now.month)} ${now.year}',
@@ -466,29 +681,22 @@ class DatabaseService {
     }
   }
 
-  /// Busca posição do usuário no ranking SEM carregar todos
   Future<int> getUserRankingPosition({
     required String serverId,
     required String userId,
   }) async {
     try {
-      // 1. Buscar totalXp do usuário
       final userSnapshot =
           await _serverUserRef(serverId, userId).child('totalXp').get();
-
       if (!userSnapshot.exists) return 0;
 
       final userXp = userSnapshot.value as int;
-
-      // 2. Contar quantos têm XP MAIOR
-      final query =
-          _serverUsersRef(serverId).orderByChild('totalXp').startAt(userXp + 1);
+      final query = _serverUsersRef(serverId)
+          .orderByChild('totalXp')
+          .startAt(userXp + 1);
 
       final snapshot = await query.get();
-
-      if (!snapshot.exists || snapshot.value == null) {
-        return 1; // Ninguém tem mais = 1º lugar
-      }
+      if (!snapshot.exists || snapshot.value == null) return 1;
 
       final usersAhead = Map<String, dynamic>.from(snapshot.value as Map);
       return usersAhead.length + 1;
@@ -498,7 +706,6 @@ class DatabaseService {
     }
   }
 
-  /// Ranking paginado (usa cache de 5 min)
   Future<List<UserModel>> getServerRanking(
     String serverId, {
     int page = 1,
@@ -506,7 +713,6 @@ class DatabaseService {
     bool forceRefresh = false,
   }) async {
     final cacheKey = 'ranking_${serverId}_p${page}_s$pageSize';
-
     return await _cache.getCached<List<UserModel>>(
           key: cacheKey,
           cacheDuration: CacheService.CACHE_SHORT,
@@ -527,9 +733,7 @@ class DatabaseService {
           .limitToLast(page * pageSize)
           .get();
 
-      if (!snapshot.exists || snapshot.value == null) {
-        return [];
-      }
+      if (!snapshot.exists || snapshot.value == null) return [];
 
       final usersMap = Map<String, dynamic>.from(snapshot.value as Map);
       final users = <UserModel>[];
@@ -537,8 +741,8 @@ class DatabaseService {
       usersMap.forEach((key, value) {
         try {
           if (value is Map) {
-            final userData = Map<String, dynamic>.from(value);
-            users.add(UserModel.fromMap(key, userData));
+            users.add(
+                UserModel.fromMap(key, Map<String, dynamic>.from(value)));
           }
         } catch (e) {
           AppConstants.debugLog('❌ Erro ao processar usuário no ranking: $e');
@@ -549,7 +753,6 @@ class DatabaseService {
 
       final startIndex = (page - 1) * pageSize;
       final endIndex = page * pageSize;
-
       return users.sublist(
         startIndex,
         endIndex > users.length ? users.length : endIndex,
@@ -560,54 +763,14 @@ class DatabaseService {
     }
   }
 
-  // =========================================================================
-  // HELPERS
-  // =========================================================================
-
-  int _calculateLevel(int totalXp) {
-    int level = 1;
-    while (level < AppConstants.maxLevel &&
-        totalXp >= AppConstants.totalXpForLevel(level + 1)) {
-      level++;
-    }
-    return level;
-  }
-
-  String _calculateRank(int totalXp) {
-    String rank = 'E';
-    for (final entry in AppConstants.rankXpRequirements.entries) {
-      if (totalXp >= entry.value) {
-        rank = entry.key;
-      }
-    }
-    return rank;
-  }
-
   String _getMonthName(int month) {
     const months = [
-      'Janeiro',
-      'Fevereiro',
-      'Março',
-      'Abril',
-      'Maio',
-      'Junho',
-      'Julho',
-      'Agosto',
-      'Setembro',
-      'Outubro',
-      'Novembro',
-      'Dezembro'
+      'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+      'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
     ];
     return months[month - 1];
   }
 
-  String formatDate(DateTime date) {
-    return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
-  }
-
-  String get todayDate => formatDate(DateTime.now());
-
-  /// Criar missões diárias
   Future<void> createDailyMissions(
     String serverId,
     String userId,
@@ -615,133 +778,22 @@ class DatabaseService {
     int? userLevel,
   }) async {
     try {
-      final level = userLevel ?? 1;
-
       final missions = <String, dynamic>{
         'fixed': {},
         'custom': {},
       };
-
-      // Criar missões fixas baseadas em categorias
       for (var category in AppConstants.fixedMissionCategories) {
         missions['fixed'][category] = {
           'name': AppConstants.fixedMissionNames[category] ?? category,
-          'xp': 50, // XP padrão
+          'xp': 50,
           'completed': false,
         };
       }
-
       await _dailyMissionsRef(serverId, userId, date).set(missions);
-
       AppConstants.debugLog('✅ Missões diárias criadas');
     } catch (e) {
       AppConstants.debugLog('❌ Erro ao criar missões: $e');
       throw Exception('Erro ao criar missões: $e');
     }
-  }
-
-  /// Adiciona missão customizada ou fixa
-  Future<void> addCustomMission({
-    required String serverId,
-    required String userId,
-    required String date,
-    required String missionName,
-    required int xp,
-    String missionType = 'custom',
-  }) async {
-    try {
-      final prefix = missionType == 'fixed' ? 'fixed' : 'custom';
-      final missionId = '${prefix}_${DateTime.now().millisecondsSinceEpoch}';
-
-      await _dailyMissionsRef(serverId, userId, date)
-          .child(missionType)
-          .child(missionId)
-          .set({
-        'name': missionName,
-        'xp': xp,
-        'completed': false,
-      });
-
-      AppConstants.debugLog('✅ Missão $missionType adicionada: $missionName');
-    } catch (e) {
-      AppConstants.debugLog('❌ Erro ao adicionar missão: $e');
-      throw Exception('Erro ao adicionar missão: $e');
-    }
-  }
-
-  /// Remove missão customizada
-   Future<void> removeCustomMission({
-    required String serverId,
-    required String userId,
-    required String date,
-    required String missionId,
-    required String missionType,
-  }) async {
-    try {
-      await _dailyMissionsRef(serverId, userId, date)
-          .child(missionType)
-          .child(missionId)
-          .remove(); // ✅ CORRIGIDO: adicionado .remove()
-
-      AppConstants.debugLog('✅ Missão removida: $missionId');
-    } catch (e) {
-      AppConstants.debugLog('❌ Erro ao remover missão: $e');
-      throw Exception('Erro ao remover missão: $e');
-    }
-  }
-
-  /// Alias para removeCustomMission (compatibilidade)
-  Future<void> deleteDailyMission({
-    required String serverId,
-    required String userId,
-    required String date,
-    required String missionType,
-    required String missionId,
-  }) async {
-    return removeCustomMission(
-      serverId: serverId,
-      userId: userId,
-      date: date,
-      missionId: missionId,
-      missionType: missionType,
-    );
-  }
-
-  /// Edita missão existente
-  Future<void> editMission({
-    required String serverId,
-    required String userId,
-    required String date,
-    required String missionId,
-    required String missionType,
-    required String newName,
-    required int newXp,
-  }) async {
-    try {
-      await _dailyMissionsRef(serverId, userId, date)
-          .child(missionType)
-          .child(missionId)
-          .update({
-        'name': newName,
-        'xp': newXp,
-      });
-
-      AppConstants.debugLog('✅ Missão editada: $missionId');
-    } catch (e) {
-      AppConstants.debugLog('❌ Erro ao editar missão: $e');
-      throw Exception('Erro ao editar missão: $e');
-    }
-  }
-
-  /// Limpar todos os streams
-  void dispose() {
-    for (final controller in _userStreamControllers.values) {
-      controller.close();
-    }
-    for (final controller in _missionsStreamControllers.values) {
-      controller.close();
-    }
-    _userStreamControllers.clear();
-    _missionsStreamControllers.clear();
   }
 }

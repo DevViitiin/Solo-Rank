@@ -1,49 +1,34 @@
 /// 📌 MISSION MODEL V3 - COM RECORRÊNCIA SEMANAL
-///
-/// ✅ Mantém estrutura original
-/// ✅ Adiciona sistema de recorrência (dias da semana + período)
-/// ✅ Sugestões de missão embutidas
-/// ✅ Compatível com Firebase existente
+import 'package:monarch/services/database_service.dart';
 
 enum MissionType {
-  fixed,  // Missões fixas diárias (3-5)
-  custom, // Missões customizadas (5-7)
+  fixed,
+  custom,
 }
 
-/// Categoria de missão customizada (opcional)
 enum CustomMissionCategory {
-  study,   // Estudo
-  fitness, // Treino/Shape
-  habit,   // Hábito geral
-  other,   // Outros
+  study,
+  fitness,
+  habit,
+  other,
 }
 
 // =============================================================================
-// ✅ NOVO - RECORRÊNCIA
+// RECORRÊNCIA
 // =============================================================================
 
-/// Tipo de período de recorrência
 enum RecurrencePeriodType {
-  forever,  // Para sempre
-  weeks,    // Por N semanas
-  months,   // Por N meses
+  forever,
+  weeks,
+  months,
 }
 
-/// Configuração de recorrência semanal de uma missão fixa
 class MissionRecurrence {
-  /// Dias da semana ativos: 0=Seg, 1=Ter, 2=Qua, 3=Qui, 4=Sex, 5=Sab, 6=Dom
+  /// Dias da semana ativos: 0=Seg, 1=Ter, 2=Qua, 3=Qui, 4=Sex, 5=Sáb, 6=Dom
   final List<int> weekdays;
-
-  /// Tipo do período
   final RecurrencePeriodType periodType;
-
-  /// Quantidade de semanas ou meses (null se forever)
   final int? periodValue;
-
-  /// Data de início (quando foi criada a recorrência)
   final DateTime startDate;
-
-  /// Data de término calculada (null se forever)
   final DateTime? endDate;
 
   MissionRecurrence({
@@ -54,25 +39,36 @@ class MissionRecurrence {
     this.endDate,
   });
 
-  /// Verifica se a missão deve aparecer hoje
-  bool isActiveToday() => isActiveOn(DateTime.now());
+  /// Verifica se a missão deve aparecer hoje (usa DatabaseService.now).
+  bool isActiveToday() => isActiveOn(DatabaseService.now);
 
-  /// Verifica se a missão deve aparecer em uma data específica
+  /// Verifica se a missão deve aparecer em [date].
+  ///
+  /// Regras:
+  ///   1. date >= startDate (não aparece antes de ser criada)
+  ///   2. date <= endDate   (não aparece após o prazo)
+  ///   3. O dia da semana de [date] está na lista weekdays
   bool isActiveOn(DateTime date) {
-    // Verificar se ainda está no período
+    final dateOnly = DateTime(date.year, date.month, date.day);
+
+    // 1. Antes da data de início → não aparece
+    final startOnly =
+        DateTime(startDate.year, startDate.month, startDate.day);
+    if (dateOnly.isBefore(startOnly)) return false;
+
+    // 2. Após a data de término → não aparece
     if (endDate != null) {
-      final dateOnly = DateTime(date.year, date.month, date.day);
-      final endOnly = DateTime(endDate!.year, endDate!.month, endDate!.day);
+      final endOnly =
+          DateTime(endDate!.year, endDate!.month, endDate!.day);
       if (dateOnly.isAfter(endOnly)) return false;
     }
 
-    // weekday do Dart: 1=Seg ... 7=Dom
-    // nosso índice:    0=Seg ... 6=Dom
+    // 3. Dia da semana
+    // Dart weekday: 1=Seg ... 7=Dom  →  nosso índice: 0=Seg ... 6=Dom
     final dayIndex = date.weekday - 1;
     return weekdays.contains(dayIndex);
   }
 
-  /// Calcula a data de término baseada no tipo de período
   static DateTime? calculateEndDate({
     required RecurrencePeriodType type,
     required DateTime startDate,
@@ -80,12 +76,12 @@ class MissionRecurrence {
   }) {
     if (type == RecurrencePeriodType.forever) return null;
     if (value == null || value <= 0) return null;
-
     if (type == RecurrencePeriodType.weeks) {
       return startDate.add(Duration(days: value * 7));
     }
     if (type == RecurrencePeriodType.months) {
-      return DateTime(startDate.year, startDate.month + value, startDate.day);
+      return DateTime(
+          startDate.year, startDate.month + value, startDate.day);
     }
     return null;
   }
@@ -120,19 +116,22 @@ class MissionRecurrence {
 
     DateTime? endDate;
     if (map['endDate'] != null) {
-      endDate = DateTime.fromMillisecondsSinceEpoch((map['endDate'] as num).toInt());
+      endDate = DateTime.fromMillisecondsSinceEpoch(
+          (map['endDate'] as num).toInt());
     }
 
     return MissionRecurrence(
       weekdays: weekdays,
       periodType: periodType,
-      periodValue: map['periodValue'] != null ? (map['periodValue'] as num).toInt() : null,
-      startDate: DateTime.fromMillisecondsSinceEpoch((map['startDate'] as num).toInt()),
+      periodValue: map['periodValue'] != null
+          ? (map['periodValue'] as num).toInt()
+          : null,
+      startDate: DateTime.fromMillisecondsSinceEpoch(
+          (map['startDate'] as num).toInt()),
       endDate: endDate,
     );
   }
 
-  /// Label legível para o período
   String get periodLabel {
     switch (periodType) {
       case RecurrencePeriodType.forever:
@@ -144,11 +143,12 @@ class MissionRecurrence {
     }
   }
 
-  /// Label legível para os dias
   String get weekdaysLabel {
     const names = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
     if (weekdays.length == 7) return 'Todos os dias';
-    if (weekdays.length == 5 && !weekdays.contains(5) && !weekdays.contains(6)) {
+    if (weekdays.length == 5 &&
+        !weekdays.contains(5) &&
+        !weekdays.contains(6)) {
       return 'Dias úteis';
     }
     return weekdays.map((d) => names[d]).join(', ');
@@ -167,8 +167,6 @@ class MissionModel {
   final DateTime? completedAt;
   final MissionType type;
   final CustomMissionCategory? category;
-
-  /// ✅ NOVO - Configuração de recorrência (apenas missões fixas)
   final MissionRecurrence? recurrence;
 
   MissionModel({
@@ -182,14 +180,18 @@ class MissionModel {
     this.recurrence,
   });
 
-  factory MissionModel.fromMap(String id, Map<String, dynamic> map, MissionType type) {
+  factory MissionModel.fromMap(
+      String id, Map<String, dynamic> map, MissionType type) {
     CustomMissionCategory? category;
     if (type == MissionType.custom && map.containsKey('category')) {
-      category = _parseCategoryFromString(map['category'] as String?);
+      category =
+          _parseCategoryFromString(map['category'] as String?);
     }
 
     MissionRecurrence? recurrence;
-    if (type == MissionType.fixed && map.containsKey('recurrence') && map['recurrence'] is Map) {
+    if (type == MissionType.fixed &&
+        map.containsKey('recurrence') &&
+        map['recurrence'] is Map) {
       try {
         recurrence = MissionRecurrence.fromMap(
           Map<String, dynamic>.from(map['recurrence'] as Map),
@@ -222,9 +224,7 @@ class MissionModel {
     try {
       if (value is int) return DateTime.fromMillisecondsSinceEpoch(value);
       if (value is String) return DateTime.parse(value);
-    } catch (e) {
-      print('⚠️ Erro ao parsear DateTime: $e');
-    }
+    } catch (_) {}
     return null;
   }
 
@@ -252,14 +252,14 @@ class MissionModel {
       'name': name,
       'xp': xp,
       'completed': completed,
-      if (completedAt != null) 'completedAt': completedAt!.millisecondsSinceEpoch,
+      if (completedAt != null)
+        'completedAt': completedAt!.millisecondsSinceEpoch,
     };
 
     if (type == MissionType.custom && category != null) {
       map['category'] = category.toString().split('.').last;
     }
 
-    // ✅ Salvar recorrência para missões fixas
     if (type == MissionType.fixed && recurrence != null) {
       map['recurrence'] = recurrence!.toMap();
     }
@@ -294,47 +294,47 @@ class MissionModel {
   bool get isFixed => type == MissionType.fixed;
   bool get isCustom => type == MissionType.custom;
 
-  /// Verifica se esta missão recorrente deve aparecer hoje
+  /// Verifica se esta missão deve aparecer hoje (usa DatabaseService.now).
   bool get isActiveToday {
     if (!isFixed || recurrence == null) return true;
     return recurrence!.isActiveToday();
   }
 
   bool get isStudyMission =>
-      category == CustomMissionCategory.study || _containsStudyKeywords(name);
+      category == CustomMissionCategory.study ||
+      _containsStudyKeywords(name);
 
   bool get isFitnessMission =>
-      category == CustomMissionCategory.fitness || _containsFitnessKeywords(name);
+      category == CustomMissionCategory.fitness ||
+      _containsFitnessKeywords(name);
 
   bool get isHabitMission => category == CustomMissionCategory.habit;
 
-  /// Missão fixa com recorrência configurada
   bool get hasRecurrence => isFixed && recurrence != null;
 
   static bool _containsStudyKeywords(String name) {
-    final keywords = [
+    const keywords = [
       'estudo', 'estudar', 'ler', 'leitura', 'livro', 'curso',
       'aula', 'aprender', 'revisar', 'revisão', 'pesquisar',
       'study', 'read', 'book', 'course', 'learn', 'review',
     ];
-    final lowerName = name.toLowerCase();
-    return keywords.any((k) => lowerName.contains(k));
+    final lower = name.toLowerCase();
+    return keywords.any((k) => lower.contains(k));
   }
 
   static bool _containsFitnessKeywords(String name) {
-    final keywords = [
+    const keywords = [
       'treino', 'treinar', 'academia', 'exercício', 'malhar',
       'corrida', 'correr', 'natação', 'nadar', 'yoga', 'alongamento',
       'workout', 'gym', 'exercise', 'run', 'swim', 'fitness',
     ];
-    final lowerName = name.toLowerCase();
-    return keywords.any((k) => lowerName.contains(k));
+    final lower = name.toLowerCase();
+    return keywords.any((k) => lower.contains(k));
   }
 
   @override
-  String toString() {
-    return 'Mission(id: $id, name: $name, type: $type, completed: $completed)';
-  }
+  String toString() =>
+      'Mission(id: $id, name: $name, type: $type, completed: $completed)';
 
   @override
   bool operator ==(Object other) {
@@ -389,14 +389,6 @@ class DailyMissionsState {
 
   double get customProgressPercentage =>
       customTotal > 0 ? (customCompleted / customTotal) : 0.0;
-
-  @override
-  String toString() {
-    return 'DailyMissionsState('
-        'fixed: $fixedCompleted/$fixedTotal, '
-        'custom: $customCompleted/$customTotal, '
-        'total: $completedMissions/$totalMissions)';
-  }
 }
 
 // =============================================================================
@@ -429,13 +421,14 @@ class XpCalculator {
   }
 
   static int incompletePenalty(int userLevel, int incompleteMissions) {
-    final penaltyPerMission = (fixedMissionXp(userLevel) * 0.4).toInt();
+    final penaltyPerMission =
+        (fixedMissionXp(userLevel) * 0.4).toInt();
     return penaltyPerMission * incompleteMissions;
   }
 }
 
 // =============================================================================
-// ✅ NOVO - SUGESTÕES DE MISSÕES
+// SUGESTÕES DE MISSÕES
 // =============================================================================
 
 class MissionSuggestion {
@@ -507,15 +500,12 @@ class MissionSuggestions {
     MissionSuggestion(name: 'Limpar área de trabalho', category: 'Produtividade', emoji: '🧹', type: MissionType.custom),
   ];
 
-  static List<MissionSuggestion> byCategory(String category) {
-    return all.where((s) => s.category == category).toList();
-  }
+  static List<MissionSuggestion> byCategory(String category) =>
+      all.where((s) => s.category == category).toList();
 
-  static List<MissionSuggestion> byType(MissionType type) {
-    return all.where((s) => s.type == type).toList();
-  }
+  static List<MissionSuggestion> byType(MissionType type) =>
+      all.where((s) => s.type == type).toList();
 
-  static List<String> get categories {
-    return all.map((s) => s.category).toSet().toList();
-  }
+  static List<String> get categories =>
+      all.map((s) => s.category).toSet().toList();
 }

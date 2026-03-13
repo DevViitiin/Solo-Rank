@@ -41,6 +41,7 @@ class _MissionsScreenState extends State<MissionsScreen>
   final MissionToggleController _toggleController = MissionToggleController.instance;
   final MissionBatchController _batchController = MissionBatchController.instance;
   final PopupService _popupService = PopupService.instance;
+  
 
   Map<String, MissionModel> _fixedMissions = {};
   Map<String, MissionModel> _customMissions = {};
@@ -89,12 +90,28 @@ class _MissionsScreenState extends State<MissionsScreen>
       final userProvider = context.read<UserProvider>();
       final userId = userProvider.currentUser?.id;
       final serverId = userProvider.currentServerId;
+      final userLevel = userProvider.currentUser?.level ?? 1;
       if (userId == null || serverId == null) {
         setState(() => _loading = false);
         return;
       }
       final today = _getTodayKey();
+
+      // ── PROPAGAÇÃO DE MISSÕES RECORRENTES ──────────────────────────────────
+      // Antes de buscar as missões do dia, garantimos que todas as missões
+      // com recorrência ativa para hoje já estão no Firebase.
+      // Isso é eficiente: só escreve se o missionId ainda não existir.
+      await _dbService.propagateRecurringMissionsToDay(
+        serverId: serverId,
+        userId: userId,
+        date: today,
+        userLevel: userLevel,
+      );
+      // ───────────────────────────────────────────────────────────────────────
+
       final cacheKey = 'missions_${serverId}_${userId}_$today';
+
+      // Sempre força refresh após propagação para garantir dados frescos
       final missionsData = await _cache.getCached<Map<String, dynamic>>(
         key: cacheKey,
         fetchFunction: () async {
@@ -102,10 +119,10 @@ class _MissionsScreenState extends State<MissionsScreen>
           return data ?? <String, dynamic>{};
         },
         cacheDuration: CacheService.CACHE_SHORT,
-        forceRefresh: forceRefresh,
+        forceRefresh: true, // sempre fresco para refletir a propagação
       );
       if (missionsData != null && missionsData.isNotEmpty) {
-        _parseMissions(missionsData, userProvider.currentUser!.level);
+        _parseMissions(missionsData, userLevel);
       }
       setState(() => _loading = false);
       _updateProgress();
@@ -136,7 +153,10 @@ class _MissionsScreenState extends State<MissionsScreen>
           final m = MissionModel.fromMap(
               key, Map<String, dynamic>.from(value), MissionType.fixed);
           // Só exibe missão fixa se estiver ativa hoje (recorrência)
-          if (m.isActiveToday) _fixedMissions[key] = m;
+          final today = DateTime.parse(DatabaseService.todayKey);
+          if (m.recurrence == null || m.recurrence!.isActiveOn(today)) {
+            _fixedMissions[key] = m;
+          }
         }
       });
     }
@@ -151,7 +171,7 @@ class _MissionsScreenState extends State<MissionsScreen>
     }
   }
 
-  String _getTodayKey() => DateFormat('yyyy-MM-dd').format(DateTime.now());
+  String _getTodayKey() => DatabaseService.todayKey;
 
   // =========================================================================
   // TOGGLE COM CONFIRMAÇÃO ← NOVO
@@ -556,6 +576,97 @@ class _MissionsScreenState extends State<MissionsScreen>
     }
   }
 
+  /// Deleta missão fixa recorrente: remove do dia E desativa o template
+  Future<void> _deleteFixedRecurringMission(MissionModel mission) async {
+    final userProvider = context.read<UserProvider>();
+    final userId = userProvider.currentUser?.id;
+    final serverId = userProvider.currentServerId;
+    if (userId == null || serverId == null) return;
+    if (mission.completed) return;
+
+    HapticFeedback.lightImpact();
+    final theme = _getThemeForRank(userProvider.currentUser?.rank ?? 'E');
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: theme.surface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text('Remover missão recorrente?',
+            style: TextStyle(fontSize: 16)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              mission.name,
+              style: TextStyle(
+                  color: Colors.amber,
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Esta missão não aparecerá mais em nenhum dia futuro.',
+              style: TextStyle(color: theme.textSecondary, fontSize: 13),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child:
+                Text('Cancelar', style: TextStyle(color: theme.textSecondary)),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              HapticFeedback.mediumImpact();
+              Navigator.pop(context, true);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: theme.error,
+              shape:
+                  RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            child: const Text('REMOVER',
+                style:
+                    TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    try {
+      final today = _getTodayKey();
+
+      // 1. Remove do dia atual
+      await _dbService.deleteDailyMission(
+        serverId: serverId,
+        userId: userId,
+        date: today,
+        missionType: 'fixed',
+        missionId: mission.id,
+      );
+
+      // 2. Desativa o template (para não aparecer em dias futuros)
+      await _dbService.deactivateFixedMissionTemplate(
+        serverId: serverId,
+        userId: userId,
+        missionId: mission.id,
+      );
+
+      _toggleController.clearMissionState(mission.id);
+      final cacheKey = 'missions_${serverId}_${userId}_$today';
+      _cache.invalidate(cacheKey);
+      await _loadMissions(forceRefresh: true);
+      if (mounted) HapticFeedback.mediumImpact();
+    } catch (e) {
+      AppConstants.debugLog('Erro ao deletar missão recorrente: $e');
+    }
+  }
+
   // =========================================================================
   // NAVIGATE TO CREATE
   // =========================================================================
@@ -903,7 +1014,12 @@ class _MissionsScreenState extends State<MissionsScreen>
                   HapticFeedback.mediumImpact();
                   _deleteCustomMission(mission.id);
                 }
-              : null,
+              : isFixed && mission.hasRecurrence && !mission.completed
+                  ? () {
+                      HapticFeedback.mediumImpact();
+                      _deleteFixedRecurringMission(mission);
+                    }
+                  : null,
           child: Container(
             margin: const EdgeInsets.only(bottom: 10),
             padding: const EdgeInsets.all(14),
@@ -1295,29 +1411,46 @@ class _CreateMissionScreenState extends State<CreateMissionScreen>
 
       if (userId == null || serverId == null) throw Exception('Usuário não encontrado');
 
-      final date = DateFormat('yyyy-MM-dd').format(DateTime.now());
+      final date = DatabaseService.todayKey;
       final xp = _selectedType == MissionType.fixed
           ? XpCalculator.fixedMissionXp(userLevel)
           : XpCalculator.customMissionXp(userLevel);
 
       final recurrence = _buildRecurrence;
 
-      // Dados extras da missão
-      final extraData = <String, dynamic>{};
-      if (recurrence != null) {
-        extraData['recurrence'] = recurrence.toMap();
-      }
+      if (_selectedType == MissionType.fixed && recurrence != null) {
+        // ── MISSÃO FIXA COM RECORRÊNCIA ──────────────────────────────────────
+        // 1. Salva o template (fonte da verdade para dias futuros)
+        final missionId = await _dbService.saveFixedMissionTemplate(
+          serverId: serverId,
+          userId: userId,
+          missionName: name,
+          xpBase: xp,
+          recurrence: recurrence,
+        );
 
-      await _dbService.addCustomMission(
-        serverId: serverId,
-        userId: userId,
-        date: date,
-        missionName: name,
-        xp: xp,
-        missionType: _selectedType == MissionType.fixed ? 'fixed' : 'custom',
-        // Se seu DatabaseService aceitar extraData, passe aqui.
-        // Caso contrário, veja nota abaixo.
-      );
+        // 2. Se ativa hoje, propaga imediatamente para o dia atual
+        if (recurrence.isActiveToday()) {
+          await _dbService.propagateRecurringMissionsToDay(
+            serverId: serverId,
+            userId: userId,
+            date: date,
+            userLevel: userLevel,
+          );
+        }
+        // ────────────────────────────────────────────────────────────────────
+      } else {
+        // ── MISSÃO SEM RECORRÊNCIA (custom ou fixa avulsa) ──────────────────
+        await _dbService.addCustomMission(
+          serverId: serverId,
+          userId: userId,
+          date: date,
+          missionName: name,
+          xp: xp,
+          missionType: _selectedType == MissionType.fixed ? 'fixed' : 'custom',
+        );
+        // ────────────────────────────────────────────────────────────────────
+      }
 
       final cacheKey = 'missions_${serverId}_${userId}_$date';
       _cache.invalidate(cacheKey);
@@ -1327,7 +1460,7 @@ class _CreateMissionScreenState extends State<CreateMissionScreen>
         Navigator.pop(context, true);
       }
     } catch (e) {
-      // Silencioso
+      AppConstants.debugLog('Erro ao criar missão: $e');
     } finally {
       if (mounted) setState(() => _isCreating = false);
     }
