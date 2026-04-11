@@ -2,11 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:monarch/core/theme/rank_themes.dart';
 import 'package:monarch/models/mission_model.dart';
 
-/// 📱 WIDGET DE MISSÕES V2 - FIXAS + CUSTOMIZADAS
-/// 
-/// Exibe missões separadas em duas seções:
-/// - Missões Fixas (Core) - obrigatórias para streak
-/// - Missões Customizadas - foco em evolução
+/// Widget de lista de missões com seções separadas.
+///
+/// Exibe missões em duas seções visuais distintas:
+/// - **Missões Fixas**: obrigatórias para manter o streak diário.
+///   Mostra progresso, recompensas e banner de conclusão.
+/// - **Missões Customizadas**: criadas pelo usuário para evolução.
+///   Mostra progresso de bônus (3+ e todas completas).
+///
+/// Cada missão exibe nome, tipo, categoria, XP e checkbox.
 class MissionsListWidget extends StatelessWidget {
   final List<MissionModel> fixedMissions;
   final List<MissionModel> customMissions;
@@ -52,6 +56,7 @@ class MissionsListWidget extends StatelessWidget {
   // SEÇÃO DE MISSÕES FIXAS
   // ===========================================================================
   
+  /// Constrói a seção de missões fixas com header, recompensas e lista.
   Widget _buildFixedMissionsSection() {
     final completedCount = fixedMissions.where((m) => m.completed).length;
     final totalCount = fixedMissions.length;
@@ -148,6 +153,7 @@ class MissionsListWidget extends StatelessWidget {
   // SEÇÃO DE MISSÕES CUSTOMIZADAS
   // ===========================================================================
   
+  /// Constrói a seção de missões customizadas com progresso de bônus.
   Widget _buildCustomMissionsSection() {
     final completedCount = customMissions.where((m) => m.completed).length;
     final totalCount = customMissions.length;
@@ -249,6 +255,7 @@ class MissionsListWidget extends StatelessWidget {
   // TILE DE MISSÃO
   // ===========================================================================
   
+  /// Constrói o tile individual de uma missão com checkbox e XP.
   Widget _buildMissionTile(MissionModel mission) {
     final isCompleted = mission.completed;
     
@@ -348,6 +355,7 @@ class MissionsListWidget extends StatelessWidget {
   // COMPONENTES AUXILIARES
   // ===========================================================================
   
+  /// Checkbox visual (não interativo) que indica conclusão da missão.
   Widget _buildCheckbox(bool isCompleted) {
     return Container(
       width: 28,
@@ -370,6 +378,7 @@ class MissionsListWidget extends StatelessWidget {
     );
   }
   
+  /// Badge circular com contagem de progresso (ex: "3/5").
   Widget _buildProgressBadge(int completed, int total, bool allCompleted) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -388,6 +397,7 @@ class MissionsListWidget extends StatelessWidget {
     );
   }
   
+  /// Chip indicando tipo da missão (FIXA ou CUSTOM).
   Widget _buildMissionTypeChip(MissionModel mission) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
@@ -408,6 +418,7 @@ class MissionsListWidget extends StatelessWidget {
     );
   }
   
+  /// Chip com ícone e label da categoria da missão customizada.
   Widget _buildCategoryChip(CustomMissionCategory category) {
     IconData icon;
     String label;
@@ -454,6 +465,7 @@ class MissionsListWidget extends StatelessWidget {
     );
   }
   
+  /// Info box com recompensas por completar todas as missões fixas.
   Widget _buildFixedRewardsInfo() {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -484,6 +496,7 @@ class MissionsListWidget extends StatelessWidget {
     );
   }
   
+  /// Info box com próximo bônus de missões customizadas.
   Widget _buildCustomRewardsInfo(int completedCount) {
     final next3 = completedCount < 3;
     final nextAll = completedCount >= 3;
@@ -525,6 +538,7 @@ class MissionsListWidget extends StatelessWidget {
     );
   }
   
+  /// Banner verde de parabéns ao completar todas as missões da seção.
   Widget _buildCompletionBanner({required bool isFixed}) {
     return Container(
       margin: const EdgeInsets.all(12),

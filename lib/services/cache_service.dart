@@ -2,24 +2,29 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 
-/// Dados em cache com timestamp
+/// Wrapper de dados em cache com timestamp de criação.
+///
+/// Permite verificar se o dado expirou com base em uma duração máxima.
 class CachedData<T> {
   final T data;
   final DateTime timestamp;
 
   CachedData(this.data, this.timestamp);
 
+  /// Retorna `true` se o dado ultrapassou a [maxAge] desde a criação.
   bool isExpired(Duration maxAge) {
     return DateTime.now().difference(timestamp) > maxAge;
   }
 }
 
-/// Serviço de cache em 2 camadas (memória + disco persistente)
+/// Serviço de cache em 2 camadas (memória + disco via Hive).
 ///
-/// CORREÇÃO PRINCIPAL:
-/// - getCached agora aceita [toEncodable] e [fromJson] para tipos
-///   complexos como UserModel, List<UserModel>, etc.
-/// - jsonEncode nunca mais vai receber objetos não serializáveis
+/// Implementa o padrão Singleton para garantir uma única instância.
+/// A camada de memória (max 100 itens) fornece acesso instantâneo,
+/// enquanto a camada de disco (max 500 itens) persiste entre sessões.
+///
+/// Suporta tipos complexos via parâmetros [toEncodable] e [fromJson]
+/// no método [getCached], evitando erros de serialização com jsonEncode.
 class CacheService {
   static CacheService? _instance;
   static CacheService get instance {
@@ -58,6 +63,10 @@ class CacheService {
   // INICIALIZAÇÃO
   // ============================================================================
 
+  /// Inicializa o Hive e abre o box de cache persistente.
+  ///
+  /// Remove automaticamente entradas com mais de 7 dias.
+  /// Seguro para chamar múltiplas vezes (idempotente).
   Future<void> init() async {
     if (_initialized) return;
     try {
@@ -162,6 +171,7 @@ class CacheService {
   // INTERNO
   // ============================================================================
 
+  /// Busca dados frescos via [fetchFunction] e armazena em ambas as camadas.
   Future<T> _fetchAndCache<T>(
     String key,
     Future<T> Function() fetchFunction, {
@@ -178,6 +188,10 @@ class CacheService {
     return freshData;
   }
 
+  /// Persiste dados no Hive em formato JSON.
+  ///
+  /// Operação best-effort: falhas não propagam exceções.
+  /// Dados maiores que 1MB são descartados.
   Future<void> _saveToDisk<T>(
     String key,
     T data, {
@@ -205,6 +219,7 @@ class CacheService {
     }
   }
 
+  /// Remove uma entrada do cache em disco (chave + timestamp).
   Future<void> _removeDiskCacheEntry(String key) async {
     try {
       await _persistentCache.delete(key);
@@ -214,6 +229,7 @@ class CacheService {
     }
   }
 
+  /// Evicta entradas mais antigas quando o cache de memória excede o limite.
   void _checkMemoryLimit() {
     if (_memoryCache.length <= MAX_MEMORY_ITEMS) return;
     final sorted = _memoryCache.keys.toList()
@@ -226,6 +242,7 @@ class CacheService {
     debugPrint('🧹 Cache memória: removidas $toRemove entradas antigas');
   }
 
+  /// Evicta entradas mais antigas quando o cache em disco excede o limite.
   Future<void> _checkDiskLimit() async {
     if (_persistentCache.length <= MAX_DISK_ITEMS) return;
     try {
@@ -249,6 +266,7 @@ class CacheService {
     }
   }
 
+  /// Remove entradas com mais de 7 dias do cache em disco.
   Future<void> _cleanOldCacheEntries() async {
     try {
       final cutoff =
@@ -277,16 +295,21 @@ class CacheService {
   // INVALIDAÇÃO
   // ============================================================================
 
+  /// Invalida uma entrada específica em ambas as camadas.
   void invalidate(String key) {
     _memoryCache.remove(key);
     Future.microtask(() => _removeDiskCacheEntry(key));
     debugPrint('🗑️ Cache invalidado: $key');
   }
 
+  /// Invalida múltiplas entradas de uma vez.
   void invalidateMultiple(List<String> keys) {
     for (final key in keys) invalidate(key);
   }
 
+  /// Invalida todas as entradas que correspondem ao padrão glob.
+  ///
+  /// Usa `*` como wildcard (ex: `ranking_*` invalida todo cache de ranking).
   void invalidatePattern(String pattern) {
     final regex = RegExp(pattern.replaceAll('*', '.*'));
     _memoryCache.removeWhere((key, _) => regex.hasMatch(key));
@@ -300,6 +323,7 @@ class CacheService {
     debugPrint('🗑️ Cache invalidado (padrão): $pattern');
   }
 
+  /// Limpa todo o cache (memória + disco) e reseta estatísticas.
   Future<void> invalidateAll() async {
     _memoryCache.clear();
     try {
@@ -315,11 +339,13 @@ class CacheService {
   // ESTATÍSTICAS
   // ============================================================================
 
+  /// Taxa de acerto do cache em percentual (ex: '85.3').
   String get _hitRate {
     if (_hits + _misses == 0) return '0';
     return ((_hits / (_hits + _misses)) * 100).toStringAsFixed(1);
   }
 
+  /// Retorna estatísticas do cache (hits, misses, erros, tamanhos).
   Map<String, dynamic> getStats() => {
         'hits': _hits,
         'misses': _misses,
@@ -329,6 +355,7 @@ class CacheService {
         'disk_items': _persistentCache.length,
       };
 
+  /// Imprime estatísticas formatadas do cache no console de debug.
   void printStats() {
     final s = getStats();
     debugPrint('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
@@ -342,5 +369,6 @@ class CacheService {
     debugPrint('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
   }
 
+  /// Reseta contadores de estatísticas (hits, misses, erros).
   void resetStats() => _hits = _misses = _diskErrors = 0;
 }

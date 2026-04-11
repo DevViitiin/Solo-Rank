@@ -2,6 +2,14 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 
 
+/// Controlador de toggle de missões com proteção contra cliques múltiplos.
+///
+/// Gerencia o ciclo de vida de cada operação de toggle:
+/// 1. **Validação** via [canToggleMission] (verifica debounce, processamento, conflito)
+/// 2. **Lock** via [startProcessing] (bloqueia a missão durante a operação)
+/// 3. **Release** via [finishProcessing] (desbloqueia e inicia debounce)
+///
+/// Implementado como Singleton via [MissionToggleController.instance].
 class MissionToggleController {
   static final MissionToggleController _instance = MissionToggleController._();
   static MissionToggleController get instance => _instance;
@@ -28,6 +36,9 @@ class MissionToggleController {
   /// Tempo de debounce entre cliques (milissegundos)
   static const int DEBOUNCE_MS = 500;
   
+  /// Valida se uma missão pode ser toggled no momento.
+  ///
+  /// Bloqueia se: já está processando, em debounce, ou estado conflitante.
   ToggleValidation canToggleMission({
     required String missionId,
     required bool currentState,
@@ -106,7 +117,7 @@ class MissionToggleController {
     }
   }
   
-  /// Inicia timer de debounce
+  /// Inicia timer de debounce de [DEBOUNCE_MS] ms após operação bem-sucedida.
   void _startDebounce(String missionId) {
     _debounceTimers[missionId]?.cancel();
     
@@ -119,7 +130,7 @@ class MissionToggleController {
     );
   }
   
-  /// Cancela processamento pendente
+  /// Cancela processamento e debounce de uma missão, liberando-a.
   void cancelProcessing(String missionId) {
     _processingMissions.remove(missionId);
     _debounceTimers[missionId]?.cancel();
@@ -205,7 +216,9 @@ class MissionToggleController {
 // CLASSES DE SUPORTE
 // =========================================================================
 
-/// Resultado da validação de toggle
+/// Resultado da validação de toggle de uma missão.
+///
+/// Se [allowed] for `false`, [reason] e [message] explicam o motivo do bloqueio.
 class ToggleValidation {
   final bool allowed;
   final ToggleBlockReason reason;
@@ -222,7 +235,7 @@ class ToggleValidation {
   bool get isBlocked => !allowed;
 }
 
-/// Razões para bloqueio de toggle
+/// Razões pelas quais um toggle de missão pode ser bloqueado.
 enum ToggleBlockReason {
   none,              // Não bloqueado
   processing,        // Já está processando

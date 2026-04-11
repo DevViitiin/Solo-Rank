@@ -9,6 +9,7 @@ import 'dart:math' as math;
 // ROTA CUSTOMIZADA — slide da direita com fade
 // ============================================================================
 
+/// Rota customizada com transição slide+fade para o perfil do ranking.
 class RankingProfileRoute extends PageRouteBuilder {
   final UserModel user;
   final int position;
@@ -42,6 +43,16 @@ class RankingProfileRoute extends PageRouteBuilder {
 // RANKING PROFILE SCREEN
 // ============================================================================
 
+/// Tela de perfil detalhado de um jogador do ranking.
+///
+/// Exibe informações completas do jogador:
+/// - Avatar animado com anel rotativo e glow pulsante
+/// - Badge de XP com shimmer
+/// - Estatísticas (nível, rank, streak, missões)
+/// - Barras de atributos com animação de preenchimento
+/// - Seção de conquistas
+///
+/// Todas as animações são coordenadas via stagger (entrada escalonada).
 class RankingProfileScreen extends StatefulWidget {
   final UserModel user;
   final int position;

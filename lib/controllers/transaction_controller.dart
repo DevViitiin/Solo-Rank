@@ -4,6 +4,22 @@ import 'package:intl/intl.dart';
 import 'package:firebase_database/firebase_database.dart';
 
 
+/// Controlador de transações idempotentes para atributos.
+///
+/// Garante que cada operação de atributo seja executada **exatamente uma vez**
+/// usando IDs de transação únicos persistidos no Firebase.
+///
+/// Fluxo de uma transação:
+/// 1. Verifica cache local de transações executadas
+/// 2. Verifica Firebase (fonte da verdade)
+/// 3. Executa a operação se ainda não foi executada
+/// 4. Persiste o registro da transação no Firebase
+/// 5. Atualiza cache local e histórico de auditoria
+///
+/// Também fornece geradores de IDs determinísticos para cada tipo
+/// de ação (complete, uncomplete, streak, levelup, rankup, login).
+///
+/// Implementado como Singleton via [AttributeTransactionController.instance].
 class AttributeTransactionController {
   static final AttributeTransactionController _instance = 
       AttributeTransactionController._();
@@ -30,7 +46,10 @@ class AttributeTransactionController {
   // INICIALIZAÇÃO
   // =========================================================================
   
-  /// Inicializa o controller carregando transações do Firebase
+  /// Inicializa o controller carregando transações já executadas do Firebase.
+  ///
+  /// Popula o cache local para evitar consultas desnecessárias.
+  /// Seguro para chamar múltiplas vezes (idempotente).
   Future<void> init(String serverId, String userId) async {
     if (_initialized) return;
     
@@ -63,14 +82,21 @@ class AttributeTransactionController {
   // REFERÊNCIAS FIREBASE
   // =========================================================================
   
+  /// Referência Firebase para todas as transações de um usuário.
   DatabaseReference _getTransactionsRef(String serverId, String userId) {
     return _database.ref('serverData/$serverId/transactions/$userId');
   }
   
+  /// Referência Firebase para uma transação específica.
   DatabaseReference _getTransactionRef(String serverId, String userId, String transactionId) {
     return _getTransactionsRef(serverId, userId).child(transactionId);
   }
 
+  /// Executa uma operação de atributo com garantia de idempotência.
+  ///
+  /// Verifica cache local e Firebase antes de executar. Se já foi
+  /// executada, retorna mapa vazio sem re-executar.
+  /// Em caso de sucesso, persiste o registro no Firebase.
   Future<Map<String, int>> executeTransaction({
     required String serverId,
     required String userId,
@@ -163,6 +189,7 @@ class AttributeTransactionController {
   // =========================================================================
   
 
+  /// Verifica se uma transação já foi executada (cache + Firebase).
   Future<bool> wasTransactionExecuted(
     String serverId,
     String userId,
@@ -202,6 +229,7 @@ class AttributeTransactionController {
   // =========================================================================
   
 
+  /// Remove uma transação do Firebase e cache, permitindo re-execução.
   Future<void> invalidateTransaction(
     String serverId,
     String userId,
@@ -224,7 +252,7 @@ class AttributeTransactionController {
     }
   }
   
-  /// Invalida todas as transações de uma data específica
+  /// Invalida todas as transações que contêm a [date] no ID.
   Future<void> invalidateDate(
     String serverId,
     String userId,
@@ -258,7 +286,7 @@ class AttributeTransactionController {
     }
   }
   
-  /// Limpa transações antigas (manter apenas últimos 7 dias)
+  /// Remove transações com mais de 7 dias do Firebase e cache.
   Future<void> cleanOldTransactions(
     String serverId,
     String userId,
@@ -298,7 +326,9 @@ class AttributeTransactionController {
     }
   }
   
-  /// Reseta TODAS as transações (usar com cuidado!)
+  /// Remove todas as transações do Firebase e limpa cache/histórico.
+  ///
+  /// **Atenção**: permite que todas as operações sejam re-executadas.
   Future<void> resetAll(String serverId, String userId) async {
     debugPrint('🔄 Resetando TODAS as transações...');
     
@@ -317,6 +347,7 @@ class AttributeTransactionController {
   // GERAÇÃO DE IDs DE TRANSAÇÃO
   // =========================================================================
   
+  /// Gera ID determinístico para transação de completar missão.
   String generateCompleteMissionId({
     required String userId,
     required String missionId,
@@ -325,6 +356,7 @@ class AttributeTransactionController {
     return 'complete_${userId}_${missionId}_$date';
   }
   
+  /// Gera ID determinístico para transação de descompletar missão.
   String generateUncompleteMissionId({
     required String userId,
     required String missionId,
@@ -333,6 +365,7 @@ class AttributeTransactionController {
     return 'uncomplete_${userId}_${missionId}_$date';
   }
   
+  /// Gera ID determinístico para transação de atualização de streak.
   String generateStreakUpdateId({
     required String userId,
     required int newStreak,
@@ -341,6 +374,7 @@ class AttributeTransactionController {
     return 'streak_${userId}_${newStreak}_$date';
   }
   
+  /// Gera ID determinístico para transação de level up.
   String generateLevelUpId({
     required String userId,
     required int newLevel,
@@ -348,6 +382,7 @@ class AttributeTransactionController {
     return 'levelup_${userId}_$newLevel';
   }
   
+  /// Gera ID determinístico para transação de rank up.
   String generateRankUpId({
     required String userId,
     required String newRank,
@@ -355,6 +390,7 @@ class AttributeTransactionController {
     return 'rankup_${userId}_$newRank';
   }
   
+  /// Gera ID determinístico para transação de login diário.
   String generateDailyLoginId({
     required String userId,
     required String date,
@@ -366,6 +402,7 @@ class AttributeTransactionController {
   // HISTÓRICO E DEBUG
   // =========================================================================
   
+  /// Registra uma mudança no histórico em memória para auditoria/debug.
   void _recordChange({
     required String userId,
     required String transactionId,
@@ -388,10 +425,12 @@ class AttributeTransactionController {
     );
   }
   
+  /// Retorna histórico imutável de mudanças de atributos de um usuário.
   List<AttributeChange> getUserHistory(String userId) {
     return List.unmodifiable(_userHistory[userId] ?? []);
   }
   
+  /// Imprime informações detalhadas de debug (cache local + Firebase).
   Future<void> printDebugInfo(String serverId, String userId) async {
     debugPrint('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     debugPrint('🔐 AttributeTransactionController - Debug Info');
@@ -434,7 +473,10 @@ class AttributeTransactionController {
 // CLASSES DE SUPORTE
 // =============================================================================
 
-/// Representa uma mudança de atributo registrada
+/// Registro de auditoria de uma mudança de atributo.
+///
+/// Armazena o ID da transação, timestamp, tipo de ação,
+/// dados da ação e as mudanças numéricas nos atributos.
 class AttributeChange {
   final String transactionId;
   final DateTime timestamp;

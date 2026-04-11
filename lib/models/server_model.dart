@@ -1,3 +1,8 @@
+/// Modelo de servidor multiplayer do sistema Dracoryx.
+///
+/// Cada servidor possui capacidade limitada de jogadores e pode estar
+/// nos estados: 'active', 'full', ou 'closed'. Os jogadores competem
+/// no ranking dentro do seu servidor.
 class ServerModel {
   final String id;
   final String name;
@@ -53,6 +58,7 @@ class ServerModel {
     );
   }
 
+  /// Converte um valor dinâmico para [int], retornando 0 como fallback.
   static int _parseInt(dynamic value) {
     if (value == null) return 0;
     if (value is int) return value;
@@ -61,6 +67,9 @@ class ServerModel {
     return 0;
   }
 
+  /// Converte um valor dinâmico para [DateTime].
+  ///
+  /// Aceita strings ISO 8601. Retorna [DateTime.now] como fallback.
   static DateTime _parseDateTime(dynamic value) {
     if (value == null) return DateTime.now();
     if (value is String) {
@@ -73,6 +82,7 @@ class ServerModel {
     return DateTime.now();
   }
 
+  /// Cria uma cópia do [ServerModel] com os campos alterados.
   ServerModel copyWith({
     String? name,
     String? displayName,

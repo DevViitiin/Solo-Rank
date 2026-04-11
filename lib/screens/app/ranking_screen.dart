@@ -15,6 +15,16 @@ import 'dart:math' as math;
 // RANKING SCREEN
 // ============================================================================
 
+/// Tela de ranking do servidor no Dracoryx.
+///
+/// Exibe a classificação dos jogadores com:
+/// - Pódio animado dos top 3 jogadores
+/// - Lista paginada com scroll infinito
+/// - Posição do usuário atual (banner fixo quando fora do top 3)
+/// - Pull-to-refresh com invalidação de cache
+/// - Detecção de dados desatualizados com reload automático (max 3 tentativas)
+///
+/// Navega para [RankingProfileScreen] ao clicar em um jogador.
 class RankingScreen extends StatefulWidget {
   const RankingScreen({Key? key}) : super(key: key);
 
@@ -122,6 +132,7 @@ class _RankingScreenState extends State<RankingScreen>
 
   // ── data ──────────────────────────────────────────────────────────────────
 
+  /// Carrega top 3, página 1 e posição do usuário com cache.
   Future<void> _loadInitialData({bool forceRefresh = false}) async {
     if (!mounted) return;
     setState(() {
@@ -193,7 +204,9 @@ class _RankingScreenState extends State<RankingScreen>
     }
   }
 
-  // FIX 1+2: cache keys corrigidas + limite de tentativas para evitar loop infinito
+  /// Verifica se o ranking está desatualizado comparando XP local vs cache.
+  ///
+  /// Limita a 3 tentativas de reload para evitar loops infinitos.
   void _checkIfRankingIsStale(String? currentUserId, int? currentXp) {
     if (_loading || _isRefreshing || _pendingReload) return;
     if (currentUserId == null || currentXp == null) return;
@@ -360,6 +373,7 @@ class _RankingScreenState extends State<RankingScreen>
     }
   }
 
+  /// Carrega próxima página de usuários (scroll infinito).
   Future<void> _loadMoreUsers() async {
     if (_loadingMore || !_hasMoreData || _loading) return;
     setState(() => _loadingMore = true);
@@ -392,6 +406,7 @@ class _RankingScreenState extends State<RankingScreen>
     }
   }
 
+  /// Pull-to-refresh: recarrega ranking com forceRefresh.
   Future<void> _refreshRanking() async {
     if (_isRefreshing) return;
     setState(() => _isRefreshing = true);
@@ -414,6 +429,7 @@ class _RankingScreenState extends State<RankingScreen>
     }
   }
 
+  /// Navega para o perfil detalhado de um jogador no ranking.
   void _openUserProfile(UserModel user, int position) {
     Navigator.push(
       context,

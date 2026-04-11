@@ -3,6 +3,16 @@ import 'dart:collection';
 import 'package:flutter/foundation.dart';
 
 
+/// Controlador de fila de operações de missão com retry automático.
+///
+/// Processa operações de toggle **sequencialmente** para evitar
+/// condições de corrida no Firebase. Cada operação tem até
+/// [MAX_RETRIES] tentativas com delay de [RETRY_DELAY] entre elas.
+///
+/// Emite [MissionBatchState] via stream para que a UI possa
+/// mostrar indicadores de processamento/pendência.
+///
+/// Implementado como Singleton via [MissionBatchController.instance].
 class MissionBatchController {
   static final MissionBatchController _instance = MissionBatchController._();
   static MissionBatchController get instance => _instance;
@@ -50,6 +60,11 @@ class MissionBatchController {
   
   bool get hasQueuedOperations => _queue.isNotEmpty;
 
+  /// Enfileira uma operação de toggle de missão para processamento sequencial.
+  ///
+  /// [optimisticState] é o estado que a UI deve mostrar imediatamente.
+  /// [operation] é a função assíncrona que executa a operação no Firebase.
+  /// [onSuccess]/[onError] são chamados após conclusão/falha.
   Future<void> enqueueMissionToggle({
     required String missionId,
     required bool optimisticState,
@@ -103,7 +118,7 @@ class MissionBatchController {
     });
   }
   
-  /// Processa batch de operações SEQUENCIALMENTE
+  /// Processa todas as operações da fila sequencialmente com retry.
   Future<void> _processBatch() async {
     if (_isProcessing || _queue.isEmpty) return;
     
@@ -132,7 +147,9 @@ class MissionBatchController {
 
   }
   
-  /// Executa operação com retry automático
+  /// Executa uma operação com até [MAX_RETRIES] tentativas.
+  ///
+  /// Chama [onError] após esgotar todas as tentativas.
   Future<void> _executeOperationWithRetry(_MissionOperation op) async {
     int attempt = 0;
     
@@ -169,7 +186,7 @@ class MissionBatchController {
     }
   }
   
-  /// Executa operação individual
+  /// Executa a operação e invoca o callback de sucesso.
   Future<void> _executeOperation(_MissionOperation op) async {
     _totalProcessed++;
     
@@ -193,6 +210,7 @@ class MissionBatchController {
   // ESTADO
   // =========================================================================
   
+  /// Emite o estado atual da fila via stream.
   void _emitState() {
     if (!_stateController.isClosed) {
       _stateController.add(currentState);
@@ -203,6 +221,7 @@ class MissionBatchController {
   // ESTATÍSTICAS
   // =========================================================================
   
+  /// Imprime estatísticas detalhadas do batch controller no console.
   void printStats() {
     debugPrint('┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓');
     debugPrint('┃ 📊 MISSION BATCH CONTROLLER V3 - Estatísticas          ┃');
@@ -223,6 +242,7 @@ class MissionBatchController {
     debugPrint('┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛');
   }
   
+  /// Reseta todos os contadores de estatísticas.
   void resetStats() {
     _totalEnqueued = 0;
     _totalProcessed = 0;
@@ -236,7 +256,7 @@ class MissionBatchController {
   // CLEANUP
   // =========================================================================
   
-  /// Limpa fila de operações pendentes
+  /// Remove todas as operações pendentes da fila sem executá-las.
   void clearQueue() {
     final count = _queue.length;
     _queue.clear();
@@ -246,7 +266,7 @@ class MissionBatchController {
     _emitState();
   }
   
-  /// Aguarda conclusão de todas operações
+  /// Aguarda conclusão de todas as operações com timeout configurável.
   Future<void> waitForCompletion({Duration timeout = const Duration(seconds: 30)}) async {
     debugPrint('⏳ Aguardando conclusão de operações...');
     
@@ -264,6 +284,7 @@ class MissionBatchController {
     debugPrint('✅ Todas operações concluídas');
   }
   
+  /// Fecha o stream controller. Chamar ao descartar o controller.
   void dispose() {
     _stateController.close();
   }
@@ -273,7 +294,10 @@ class MissionBatchController {
 // CLASSES DE SUPORTE
 // =============================================================================
 
-/// Operação de missão na fila
+/// Representação interna de uma operação de missão na fila.
+///
+/// Contém o ID da missão, estado otimista para UI, a função de
+/// operação assíncrona, e callbacks de sucesso/erro.
 class _MissionOperation {
   final String missionId;
   final bool optimisticState;
@@ -292,7 +316,10 @@ class _MissionOperation {
   });
 }
 
-/// Estado do batch controller
+/// Snapshot do estado atual do batch controller.
+///
+/// Permite à UI verificar se uma missão específica está sendo
+/// processada ou aguardando na fila.
 class MissionBatchState {
   final Set<String> processing;
   final Set<String> pending;
@@ -302,7 +329,12 @@ class MissionBatchState {
     required this.pending,
   });
   
+  /// Retorna `true` se a missão está sendo processada agora.
   bool isProcessing(String missionId) => processing.contains(missionId);
+
+  /// Retorna `true` se a missão está na fila aguardando processamento.
   bool isPending(String missionId) => pending.contains(missionId);
+
+  /// Retorna `true` se a missão está ativa (processando ou pendente).
   bool isActive(String missionId) => isProcessing(missionId) || isPending(missionId);
 }

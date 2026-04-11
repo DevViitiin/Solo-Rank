@@ -1,3 +1,9 @@
+/// Ponto de entrada do aplicativo Dracoryx (Solo-Rank).
+///
+/// Inicializa Firebase, configura o cache local e registra os providers
+/// de estado antes de renderizar a árvore de widgets.
+library;
+
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:monarch/core/auth_wrapper.dart';
@@ -6,7 +12,13 @@ import 'package:monarch/services/database_service.dart';
 import 'package:provider/provider.dart';
 import 'providers/user_provider.dart';
 
-
+/// Inicializa dependências essenciais e executa o app.
+///
+/// Ordem de inicialização:
+/// 1. Flutter bindings
+/// 2. Firebase
+/// 3. Data de teste (para desenvolvimento)
+/// 4. Cache local (Hive)
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
@@ -16,6 +28,11 @@ void main() async {
   runApp(const MyApp());
 }
 
+/// Widget raiz do aplicativo Dracoryx.
+///
+/// Configura o [MultiProvider] com [UserProvider] para gerenciamento
+/// de estado global, e define o [MaterialApp] com tema escuro
+/// customizado baseado no sistema de ranks.
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
 

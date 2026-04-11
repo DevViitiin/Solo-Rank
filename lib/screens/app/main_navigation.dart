@@ -8,6 +8,18 @@ import 'package:monarch/screens/app/ranking_screen.dart';
 import 'package:monarch/screens/auth/onboarding_guide.dart';
 import 'package:provider/provider.dart';
 
+/// Widget de navegação principal com bottom navigation bar.
+///
+/// Gerencia as 4 telas principais via [IndexedStack]:
+/// - **Início** ([HomeScreen])
+/// - **Missões** ([MissionsScreen])
+/// - **Ranking** ([RankingScreen])
+/// - **Atributos** ([AttributesScreen])
+///
+/// Exibe overlay de [OnboardingGuide] se o usuário ainda não
+/// completou o onboarding (controlado por `onboardingCompleted`).
+///
+/// O tema da barra de navegação muda conforme o rank do usuário.
 class MainNavigation extends StatefulWidget {
   const MainNavigation({Key? key}) : super(key: key);
 
@@ -62,6 +74,7 @@ class _MainNavigationState extends State<MainNavigation> {
     );
   }
 
+  /// Constrói a barra de navegação inferior com gradiente do rank.
   Widget _buildNavBar(RankTheme theme) {
     return Container(
       decoration: BoxDecoration(
@@ -93,6 +106,7 @@ class _MainNavigationState extends State<MainNavigation> {
     );
   }
 
+  /// Constrói um item individual da barra de navegação.
   Widget _buildNavItem(_NavItem item, int index, RankTheme theme) {
     final isActive = _currentIndex == index;
 
@@ -155,6 +169,7 @@ class _MainNavigationState extends State<MainNavigation> {
     );
   }
 
+  /// Retorna o [RankTheme] correspondente ao rank informado.
   RankTheme _getThemeForRank(String rank) {
     switch (rank.toUpperCase()) {
       case 'E':   return RankThemes.e;
@@ -174,6 +189,7 @@ class _MainNavigationState extends State<MainNavigation> {
 // HELPERS
 // =============================================================================
 
+/// Itens de navegação com ícones ativos/inativos e labels.
 const List<_NavItem> _navItems = [
   _NavItem(icon: Icons.home_outlined,          activeIcon: Icons.home,          label: 'Início'),
   _NavItem(icon: Icons.assignment_outlined,    activeIcon: Icons.assignment,    label: 'Missões'),
@@ -181,6 +197,9 @@ const List<_NavItem> _navItems = [
   _NavItem(icon: Icons.military_tech_outlined, activeIcon: Icons.military_tech, label: 'Atributos'),
 ];
 
+/// Estado mínimo para o [Selector] do [MainNavigation].
+///
+/// Evita rebuilds desnecessários quando outros campos do [UserProvider] mudam.
 class _NavState {
   final String rank;
   final bool onboardingCompleted;
@@ -197,6 +216,7 @@ class _NavState {
   int get hashCode => Object.hash(rank, onboardingCompleted);
 }
 
+/// Modelo de dados para um item da barra de navegação.
 class _NavItem {
   final IconData icon;
   final IconData activeIcon;

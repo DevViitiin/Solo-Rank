@@ -3,14 +3,17 @@ import 'package:monarch/services/database_service.dart';
 import 'package:monarch/models/user_model.dart';
 import 'package:intl/intl.dart';
 
-/// 🔥 STREAK SERVICE - GERENCIAMENTO DE SEQUÊNCIAS DIÁRIAS
-/// 
+/// Serviço de gerenciamento de sequências diárias (streaks).
+///
 /// Responsabilidades:
-/// 1. Calcular streak atual baseado em dias consecutivos
-/// 2. Atualizar streak quando todas missões do dia são completadas
-/// 3. Resetar streak quando um dia é perdido
-/// 4. Tracking de milestones para motivação (streak não afeta mais atributos)
-
+/// - Calcular streak atual baseado em dias consecutivos com missões fixas completas
+/// - Atualizar streak quando todas as missões fixas do dia são completadas
+/// - Resetar streak quando um dia é perdido (não completou ontem)
+/// - Tracking de milestones em tiers de 30 dias para motivação
+///
+/// O streak depende **apenas das missões fixas** (mínimo 5 completas).
+/// Streaks não afetam atributos diretamente, servem como motivação.
+/// Implementado como Singleton via [StreakService.instance].
 class StreakService {
   static final StreakService _instance = StreakService._();
   static StreakService get instance => _instance;
@@ -457,7 +460,7 @@ class StreakService {
     return 0;
   }
   
-  /// Retorna o tier atual (1, 2, 3, etc.)
+  /// Retorna o tier atual do streak (1 = 0-30 dias, 2 = 31-60, etc.).
   int getCurrentTier(int streak) {
     return (streak / 30).floor() + 1;
   }
@@ -468,7 +471,10 @@ class StreakService {
     return streak >= milestones.last;
   }
   
-  /// Retorna o bônus de XP baseado no streak (apenas motivacional, não afeta atributos)
+  /// Retorna o bônus de XP baseado no streak atual.
+  ///
+  /// Escala: 0 (0-2 dias) → 25 (3-6) → 50 (7-14) → 100 (15-29)
+  /// → 150 (30-59) → 200 (60-89) → 300 (90+).
   int getStreakXpBonus(int streak) {
     if (streak >= 90) return 300;  // 90+ dias (Tier 3+)
     if (streak >= 60) return 200;  // 60-89 dias (Tier 2)
@@ -496,6 +502,10 @@ class StreakService {
 // CLASSES DE RESULTADO
 // =============================================================================
 
+/// Resultado do cálculo de streak atual.
+///
+/// Contém o streak em dias, última data completada, e flags indicando
+/// se o streak foi quebrado e se o dia atual já foi completado.
 class StreakCalculationResult {
   final int currentStreak;
   final DateTime? lastCompletedDate;
@@ -509,14 +519,20 @@ class StreakCalculationResult {
     required this.completedToday,
   });
   
+  /// Retorna `true` se o usuário tem um streak ativo (>0 dias).
   bool get hasActiveStreak => currentStreak > 0;
   
+  /// Retorna a última data completada formatada (dd/MM/yyyy) ou 'Nunca'.
   String get lastCompletedDateFormatted {
     if (lastCompletedDate == null) return 'Nunca';
     return DateFormat('dd/MM/yyyy').format(lastCompletedDate!);
   }
 }
 
+/// Resultado da atualização de streak após completar todas as fixas.
+///
+/// Inclui streak anterior/novo, melhor streak, milestone atingido
+/// e eventuais mudanças de atributos.
 class StreakUpdateResult {
   final bool success;
   final int oldStreak;
@@ -536,6 +552,9 @@ class StreakUpdateResult {
     required this.attributeChanges,
   });
   
+  /// Retorna `true` se o streak aumentou nesta atualização.
   bool get streakIncreased => newStreak > oldStreak;
+
+  /// Diferença entre streak novo e anterior.
   int get streakGain => newStreak - oldStreak;
 }

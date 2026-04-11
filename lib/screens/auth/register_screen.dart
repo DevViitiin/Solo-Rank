@@ -6,6 +6,13 @@ import 'package:monarch/screens/auth/server_select.dart';
 import 'package:monarch/services/auth_service.dart';
 
 
+/// Tela de cadastro de novo usuário do Dracoryx.
+///
+/// Coleta nome, email, senha e aceite dos termos de uso.
+/// Após criar a conta no Firebase Auth via [AuthService],
+/// navega para [ServerSelectionScreen] para escolha de servidor.
+///
+/// O usuário só é criado no banco de dados após escolher o servidor.
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({Key? key}) : super(key: key);
   
@@ -178,8 +185,7 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
     }
   }
   
-  /// Abre URL em navegador externo
-  ///  MELHORADO: Tenta diferentes modos de abertura e mostra erro detalhado
+  /// Abre URL em navegador externo com fallback para modo padrão.
   Future<void> _launchURL(String url) async {
     try {
       final uri = Uri.parse(url);

@@ -3,23 +3,16 @@ import 'package:flutter/foundation.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:intl/intl.dart';
 
-/// 🎯 SERVIÇO COMPLETO DE POPUPS
-/// 
-/// Gerencia todos os tipos de popups do app:
-/// - ✅ Conquistas diárias (1x por dia)
-/// - 🎉 Level ups
-/// - 🔥 Streaks
-/// - 📊 Rank ups
-/// - ⚠️ Avisos e alertas
-/// - 💡 Dicas e tutoriais
-/// - 🎁 Recompensas
-/// 
-/// Features:
-/// - Persistência em Hive
-/// - Controle de frequência
-/// - Fila de prioridade
-/// - Animações suaves
-/// - Histórico de popups
+/// Serviço centralizado de notificações popup do sistema Dracoryx.
+///
+/// Gerencia todos os tipos de popups (conquistas, level ups, streaks,
+/// rank ups, avisos, dicas e recompensas) com:
+/// - **Persistência em Hive**: histórico para controle de frequência
+/// - **Fila de prioridade**: popups são ordenados por [PopupPriority]
+/// - **Controle de exibição**: popups mostrados apenas 1x por dia (configurável)
+/// - **Limpeza automática**: histórico >30 dias é removido
+///
+/// Implementado como Singleton via [PopupService.instance].
 class PopupService {
   static final PopupService _instance = PopupService._();
   static PopupService get instance => _instance;
@@ -86,7 +79,9 @@ class PopupService {
   // INICIALIZAÇÃO
   // =========================================================================
   
-  /// Inicializar o serviço
+  /// Inicializa o Hive box de histórico e limpa entradas antigas.
+  ///
+  /// Seguro para chamar múltiplas vezes (idempotente).
   Future<void> init() async {
     if (_initialized) return;
     
@@ -559,7 +554,7 @@ class PopupService {
   // SISTEMA DE FILA
   // =========================================================================
   
-  /// Adiciona popup na fila
+  /// Adiciona popup na fila ordenada por prioridade (maior primeiro).
   void _addToQueue(_PopupQueueItem item) {
     _queue.add(item);
     _queue.sort((a, b) => b.priority.index.compareTo(a.priority.index));
@@ -569,7 +564,10 @@ class PopupService {
     debugPrint('   Fila atual: ${_queue.length} popups');
   }
   
-  /// Processa a fila de popups
+  /// Processa sequencialmente todos os popups da fila.
+  ///
+  /// Aguarda 300ms entre cada popup para transição suave.
+  /// Reentrant-safe via flag [_isShowingPopup].
   Future<void> _processQueue(BuildContext context) async {
     if (_isShowingPopup || _queue.isEmpty) return;
     
@@ -596,7 +594,10 @@ class PopupService {
   // EXIBIÇÃO INTERNA
   // =========================================================================
   
-  /// Método principal para exibir popups
+  /// Método interno para enfileirar e exibir um popup.
+  ///
+  /// Verifica duplicidade via [wasShownToday] quando [showOnlyOnce] é `true`.
+  /// Retorna `true` se o popup foi enfileirado, `false` se já foi mostrado.
   Future<bool> _showPopup({
     required BuildContext context,
     required String userId,
@@ -641,7 +642,7 @@ class PopupService {
     return true;
   }
   
-  /// Exibe o dialog do popup
+  /// Renderiza o dialog Material do popup com cores baseadas no tipo.
   Future<void> _showPopupDialog({
     required BuildContext context,
     required _PopupQueueItem item,
@@ -780,7 +781,7 @@ class PopupService {
   // HELPERS
   // =========================================================================
   
-  /// Retorna cores baseadas no tipo de popup
+  /// Mapeia o tipo de popup para seu esquema de cores (fundo, ícone, botão).
   _PopupColors _getPopupColors(String type) {
     switch (type) {
       case TYPE_ACHIEVEMENT:
@@ -921,7 +922,10 @@ class PopupService {
   // LIMPEZA
   // =========================================================================
   
-  /// Limpa histórico antigo (>30 dias)
+  /// Remove entradas do histórico com mais de 30 dias.
+  ///
+  /// Extrai a data da chave (formato: `userId_popupId_yyyy-MM-dd`)
+  /// e remove as que ultrapassaram o prazo.
   Future<void> _cleanOldHistory() async {
     try {
       final now = DateTime.now();
@@ -960,7 +964,7 @@ class PopupService {
     }
   }
   
-  /// Reseta todo o histórico (debug)
+  /// Limpa todo o histórico de popups (uso em debug).
   Future<void> resetAll() async {
     if (!_initialized) await init();
     
@@ -991,7 +995,9 @@ class PopupService {
   // DEBUG
   // =========================================================================
   
-  /// Imprime histórico de popups
+  /// Imprime histórico formatado de popups no console de debug.
+  ///
+  /// Se [userId] fornecido, filtra apenas popups desse usuário.
   void printHistory([String? userId]) {
     if (!_initialized) {
       debugPrint('⚠️ PopupService não inicializado');
@@ -1028,7 +1034,7 @@ class PopupService {
     debugPrint('└────────────────────────────────────────────');
   }
   
-  /// Imprime estatísticas
+  /// Retorna estatísticas agregadas dos popups (total por tipo, fila, etc.).
   Map<String, dynamic> getStats([String? userId]) {
     if (!_initialized) return {};
     
@@ -1062,7 +1068,9 @@ class PopupService {
 // CLASSES AUXILIARES
 // =============================================================================
 
-/// Prioridade do popup
+/// Níveis de prioridade para ordenação na fila de popups.
+///
+/// Popups de maior prioridade são exibidos primeiro.
 enum PopupPriority {
   low,
   medium,
@@ -1070,7 +1078,10 @@ enum PopupPriority {
   critical,
 }
 
-/// Item na fila de popups
+/// Representação interna de um popup na fila de exibição.
+///
+/// Contém todos os dados necessários para renderizar o dialog:
+/// título, mensagem, botões, callbacks e configurações de controle.
 class _PopupQueueItem {
   final String userId;
   final String popupId;
@@ -1101,7 +1112,9 @@ class _PopupQueueItem {
   });
 }
 
-/// Cores do popup
+/// Esquema de cores para renderização de um popup.
+///
+/// Define fundo, ícone e cor do botão primário baseado no tipo.
 class _PopupColors {
   final Color background;
   final Color iconBackground;

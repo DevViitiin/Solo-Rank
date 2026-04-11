@@ -1,11 +1,27 @@
-/// 📌 MISSION MODEL V3 - COM RECORRÊNCIA SEMANAL
+/// Modelos de missões do sistema Dracoryx.
+///
+/// Define os tipos de missão (fixa e customizada), recorrência semanal,
+/// estado diário, cálculo de XP e sugestões de missões predefinidas.
+library;
+
 import 'package:monarch/services/database_service.dart';
 
+/// Tipos de missão disponíveis no sistema.
+///
+/// - [fixed]: missões obrigatórias para manter o streak diário.
+/// - [custom]: missões criadas pelo usuário para evolução pessoal.
 enum MissionType {
   fixed,
   custom,
 }
 
+/// Categorias de missões customizadas.
+///
+/// Determina qual atributo é incrementado ao completar a missão:
+/// - [study]: incrementa Estudo
+/// - [fitness]: incrementa Shape
+/// - [habit]: incrementa Hábito
+/// - [other]: sem atributo específico, concede apenas XP
 enum CustomMissionCategory {
   study,
   fitness,
@@ -17,12 +33,21 @@ enum CustomMissionCategory {
 // RECORRÊNCIA
 // =============================================================================
 
+/// Tipo de período de recorrência para missões fixas.
+///
+/// - [forever]: recorre indefinidamente
+/// - [weeks]: recorre por N semanas
+/// - [months]: recorre por N meses
 enum RecurrencePeriodType {
   forever,
   weeks,
   months,
 }
 
+/// Configuração de recorrência semanal para missões fixas.
+///
+/// Define em quais dias da semana a missão aparece e por quanto
+/// tempo ela permanece ativa (para sempre, N semanas ou N meses).
 class MissionRecurrence {
   /// Dias da semana ativos: 0=Seg, 1=Ter, 2=Qua, 3=Qui, 4=Sex, 5=Sáb, 6=Dom
   final List<int> weekdays;
@@ -69,6 +94,9 @@ class MissionRecurrence {
     return weekdays.contains(dayIndex);
   }
 
+  /// Calcula a data final da recorrência baseado no tipo e valor.
+  ///
+  /// Retorna `null` para recorrência infinita ([RecurrencePeriodType.forever]).
   static DateTime? calculateEndDate({
     required RecurrencePeriodType type,
     required DateTime startDate,
@@ -86,6 +114,7 @@ class MissionRecurrence {
     return null;
   }
 
+  /// Converte a recorrência para Map para persistência no Firebase.
   Map<String, dynamic> toMap() {
     return {
       'weekdays': weekdays,
@@ -96,6 +125,7 @@ class MissionRecurrence {
     };
   }
 
+  /// Cria [MissionRecurrence] a partir de um Map do Firebase.
   factory MissionRecurrence.fromMap(Map<String, dynamic> map) {
     final weekdays = (map['weekdays'] as List?)
             ?.map((e) => (e as num).toInt())
@@ -132,6 +162,7 @@ class MissionRecurrence {
     );
   }
 
+  /// Rótulo legível do período de recorrência (ex: 'Para sempre', '4x semanas').
   String get periodLabel {
     switch (periodType) {
       case RecurrencePeriodType.forever:
@@ -143,6 +174,7 @@ class MissionRecurrence {
     }
   }
 
+  /// Rótulo legível dos dias da semana ativos (ex: 'Todos os dias', 'Dias úteis').
   String get weekdaysLabel {
     const names = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
     if (weekdays.length == 7) return 'Todos os dias';
@@ -159,6 +191,11 @@ class MissionRecurrence {
 // MISSION MODEL
 // =============================================================================
 
+/// Modelo de uma missão individual do sistema Dracoryx.
+///
+/// Pode ser do tipo [MissionType.fixed] (obrigatória, afeta streak)
+/// ou [MissionType.custom] (opcional, foco em evolução pessoal).
+/// Missões fixas podem ter [MissionRecurrence] para recorrência semanal.
 class MissionModel {
   final String id;
   final String name;
@@ -180,6 +217,10 @@ class MissionModel {
     this.recurrence,
   });
 
+  /// Cria [MissionModel] a partir de um Map do Firebase.
+  ///
+  /// O [type] determina se a missão é fixa ou customizada,
+  /// o que influencia o parsing de campos como 'category' e 'recurrence'.
   factory MissionModel.fromMap(
       String id, Map<String, dynamic> map, MissionType type) {
     CustomMissionCategory? category;
@@ -211,6 +252,7 @@ class MissionModel {
     );
   }
 
+  /// Converte um valor dinâmico para [int].
   static int? _parseInt(dynamic value) {
     if (value == null) return null;
     if (value is int) return value;
@@ -219,6 +261,7 @@ class MissionModel {
     return null;
   }
 
+  /// Converte um valor dinâmico para [DateTime] (nullable).
   static DateTime? _parseDateTime(dynamic value) {
     if (value == null) return null;
     try {
@@ -228,6 +271,10 @@ class MissionModel {
     return null;
   }
 
+  /// Converte uma string de categoria para [CustomMissionCategory].
+  ///
+  /// Aceita nomes em português e inglês. Retorna [CustomMissionCategory.other]
+  /// como fallback.
   static CustomMissionCategory _parseCategoryFromString(String? str) {
     if (str == null) return CustomMissionCategory.other;
     switch (str.toLowerCase()) {
@@ -247,6 +294,7 @@ class MissionModel {
     }
   }
 
+  /// Converte a missão para Map para persistência no Firebase.
   Map<String, dynamic> toMap() {
     final map = <String, dynamic>{
       'name': name,
@@ -267,6 +315,7 @@ class MissionModel {
     return map;
   }
 
+  /// Cria uma cópia do [MissionModel] com os campos alterados.
   MissionModel copyWith({
     String? name,
     int? xp,
@@ -291,7 +340,10 @@ class MissionModel {
   // HELPERS
   // =========================================================================
 
+  /// Retorna `true` se esta é uma missão fixa (obrigatória).
   bool get isFixed => type == MissionType.fixed;
+
+  /// Retorna `true` se esta é uma missão customizada (opcional).
   bool get isCustom => type == MissionType.custom;
 
   /// Verifica se esta missão deve aparecer hoje (usa DatabaseService.now).
@@ -300,18 +352,23 @@ class MissionModel {
     return recurrence!.isActiveToday();
   }
 
+  /// Retorna `true` se a missão é classificada como estudo.
   bool get isStudyMission =>
       category == CustomMissionCategory.study ||
       _containsStudyKeywords(name);
 
+  /// Retorna `true` se a missão é classificada como fitness.
   bool get isFitnessMission =>
       category == CustomMissionCategory.fitness ||
       _containsFitnessKeywords(name);
 
+  /// Retorna `true` se a missão é classificada como hábito.
   bool get isHabitMission => category == CustomMissionCategory.habit;
 
+  /// Retorna `true` se a missão fixa possui recorrência configurada.
   bool get hasRecurrence => isFixed && recurrence != null;
 
+  /// Verifica se o nome da missão contém palavras-chave de estudo.
   static bool _containsStudyKeywords(String name) {
     const keywords = [
       'estudo', 'estudar', 'ler', 'leitura', 'livro', 'curso',
@@ -322,6 +379,7 @@ class MissionModel {
     return keywords.any((k) => lower.contains(k));
   }
 
+  /// Verifica se o nome da missão contém palavras-chave de fitness.
   static bool _containsFitnessKeywords(String name) {
     const keywords = [
       'treino', 'treinar', 'academia', 'exercício', 'malhar',
@@ -350,6 +408,10 @@ class MissionModel {
 // ESTADO DAS MISSÕES DO DIA
 // =============================================================================
 
+/// Estado agregado das missões de um dia específico.
+///
+/// Fornece contagens de progresso, flags de conclusão e percentuais
+/// para missões fixas e customizadas separadamente.
 class DailyMissionsState {
   final List<MissionModel> fixedMissions;
   final List<MissionModel> customMissions;
@@ -395,15 +457,24 @@ class DailyMissionsState {
 // XP CALCULATOR
 // =============================================================================
 
+/// Calculadora centralizada de XP do sistema de progressão.
+///
+/// Define fórmulas para XP de missões, XP necessário por nível,
+/// bônus de streak e penalidade por missões incompletas.
 class XpCalculator {
+  /// Calcula XP ganho ao completar uma missão fixa, escala com o nível.
   static int fixedMissionXp(int userLevel) => 50 + (userLevel * 10);
+
+  /// Calcula XP ganho ao completar uma missão customizada, escala com o nível.
   static int customMissionXp(int userLevel) => 30 + (userLevel * 5);
 
+  /// Calcula XP necessário para alcançar um nível específico.
   static int xpForLevel(int level) {
     if (level <= 1) return 0;
     return (level * 100) + ((level - 1) * 25);
   }
 
+  /// Calcula XP total acumulado necessário até um nível.
   static int totalXpForLevel(int level) {
     int total = 0;
     for (int i = 1; i <= level; i++) {
@@ -412,6 +483,7 @@ class XpCalculator {
     return total;
   }
 
+  /// Bônus de XP baseado nos dias consecutivos de streak.
   static int streakBonus(int streakDays) {
     if (streakDays < 3) return 0;
     if (streakDays < 7) return 25;
@@ -420,6 +492,7 @@ class XpCalculator {
     return 150;
   }
 
+  /// Penalidade de XP por missões fixas incompletas.
   static int incompletePenalty(int userLevel, int incompleteMissions) {
     final penaltyPerMission =
         (fixedMissionXp(userLevel) * 0.4).toInt();
@@ -431,6 +504,10 @@ class XpCalculator {
 // SUGESTÕES DE MISSÕES
 // =============================================================================
 
+/// Sugestão de missão predefinida para apresentar ao usuário.
+///
+/// Usada na tela de criação de missões para oferecer ideias
+/// categorizadas com emoji representativo.
 class MissionSuggestion {
   final String name;
   final String category;
@@ -445,7 +522,11 @@ class MissionSuggestion {
   });
 }
 
+/// Repositório estático de sugestões de missões predefinidas.
+///
+/// Organizado por categorias: Fitness, Estudos, Saúde, Higiene e Nutrição.
 class MissionSuggestions {
+  /// Lista completa de todas as sugestões de missões disponíveis.
   static const List<MissionSuggestion> all = [
     // FITNESS
     MissionSuggestion(name: 'Treinar na academia', category: 'Fitness', emoji: '🏋️', type: MissionType.fixed),

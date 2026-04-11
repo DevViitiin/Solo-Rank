@@ -14,6 +14,18 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'dart:math' as math;
 
+/// Tela principal (Home) do aplicativo Dracoryx.
+///
+/// Exibe o dashboard do usuário com:
+/// - Saudação personalizada por horário
+/// - Card épico de rank com animações (pulse, glow, shimmer)
+/// - Barra de progresso de XP
+/// - Estatísticas do dia (missões completadas, XP ganho)
+/// - Card de streak atual
+/// - Resumo de missões e atributos
+/// - Seção de próximo rank
+///
+/// Usa [Consumer<UserProvider>] para reagir a mudanças de estado.
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
 
@@ -50,6 +62,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     _loadData();
   }
 
+  /// Configura todos os AnimationControllers e suas curvas.
   void _setupAnimations() {
     _pulseController = AnimationController(
       vsync: this,
@@ -118,6 +131,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     super.dispose();
   }
 
+  /// Carrega missões do dia e calcula estatísticas com cache.
   Future<void> _loadData() async {
     setState(() => _loading = true);
     try {
@@ -153,6 +167,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     }
   }
 
+  /// Calcula estatísticas do dia a partir das missões carregadas.
   void _calculateStats() {
     int fixedCompleted = 0;
     int fixedTotal = 0;
@@ -199,6 +214,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     };
   }
 
+  /// Retorna saudação baseada no horário atual (manhã/tarde/noite).
   String _getGreeting() {
     final hour = DateTime.now().hour;
     if (hour < 12) return 'BOM DIA';
@@ -206,6 +222,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     return 'BOA NOITE';
   }
 
+  /// Exibe diálogo de confirmação de logout.
   Future<void> _showLogoutDialog(RankTheme theme) async {
     final confirmed = await showDialog<bool>(
       context: context,
@@ -259,6 +276,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     if (confirmed == true) _performLogout();
   }
 
+  /// Executa o logout e navega para a tela de login.
   Future<void> _performLogout() async {
     try {
       final userProvider = context.read<UserProvider>();
