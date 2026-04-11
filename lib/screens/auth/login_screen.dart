@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:monarch/core/theme/rank_themes.dart';
-import 'package:monarch/screens/screens_app/home_screen.dart';
-import 'package:monarch/screens/screens_app/welcome_screen.dart';
-import 'package:monarch/screens/screens_app/main_navigation.dart';
+import 'package:monarch/screens/app/home_screen.dart';
+import 'package:monarch/screens/app/welcome_screen.dart';
+import 'package:monarch/screens/app/main_navigation.dart';
 import 'package:monarch/services/auth_service.dart';
 import 'package:monarch/providers/user_provider.dart';
 import 'package:provider/provider.dart';

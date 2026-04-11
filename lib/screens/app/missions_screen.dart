@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:monarch/constants/app_constants.dart';
+import 'package:monarch/core/constants/app_constants.dart';
 import 'package:monarch/controllers/mission_controller.dart';
 import 'package:monarch/controllers/mission_queue_controller.dart';
 import 'package:monarch/core/theme/rank_themes.dart';
 import 'package:monarch/providers/user_provider.dart';
-import 'package:monarch/screens/screens_app/animated_particles.dart';
-import 'package:monarch/screens/screens_app/animations_mission.dart';
-import 'package:monarch/screens/screens_app/level_up_screen.dart';
+import 'package:monarch/widgets/animated_particles.dart';
+import 'package:monarch/widgets/achievement_popup.dart';
+import 'package:monarch/widgets/level_up_overlay.dart';
 import 'package:monarch/services/database_service.dart';
 import 'package:monarch/services/cache_service.dart';
 import 'package:monarch/services/mission_service.dart';

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:monarch/auth_wrapper.dart';
+import 'package:monarch/core/auth_wrapper.dart';
 import 'package:monarch/core/theme/rank_themes.dart';
 import 'package:monarch/providers/user_provider.dart';
-import 'package:monarch/screens/screens_app/main_navigation.dart';
+import 'package:monarch/screens/app/main_navigation.dart';
 import 'package:provider/provider.dart';
 import 'dart:math' as math;
 

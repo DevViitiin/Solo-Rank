@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:monarch/constants/app_constants.dart';
+import 'package:monarch/core/constants/app_constants.dart';
 import 'package:monarch/core/theme/rank_themes.dart';
 import 'package:monarch/models/user_model.dart';
 import 'package:monarch/providers/user_provider.dart';

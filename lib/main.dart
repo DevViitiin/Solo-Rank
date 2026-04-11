@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:monarch/auth_wrapper.dart';
+import 'package:monarch/core/auth_wrapper.dart';
 import 'package:monarch/services/cache_service.dart';
 import 'package:monarch/services/database_service.dart';
 import 'package:provider/provider.dart';

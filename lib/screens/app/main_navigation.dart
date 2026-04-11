@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:monarch/core/theme/rank_themes.dart';
 import 'package:monarch/providers/user_provider.dart';
-import 'package:monarch/screens/screens_app/attributes_screen.dart';
-import 'package:monarch/screens/screens_app/home_screen.dart';
-import 'package:monarch/screens/screens_app/missions_screen.dart';
-import 'package:monarch/screens/screens_app/ranking_screen.dart';
-import 'package:monarch/screens/screens_init/onboarding_guide.dart';
+import 'package:monarch/screens/app/attributes_screen.dart';
+import 'package:monarch/screens/app/home_screen.dart';
+import 'package:monarch/screens/app/missions_screen.dart';
+import 'package:monarch/screens/app/ranking_screen.dart';
+import 'package:monarch/screens/auth/onboarding_guide.dart';
 import 'package:provider/provider.dart';
 
 class MainNavigation extends StatefulWidget {

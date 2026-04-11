@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:monarch/constants/app_constants.dart';
+import 'package:monarch/core/constants/app_constants.dart';
 import 'package:monarch/core/theme/rank_themes.dart';
 import 'package:monarch/providers/user_provider.dart';
 import 'package:monarch/models/mission_model.dart';
-import 'package:monarch/screens/screens_app/animated_particles.dart';
-import 'package:monarch/screens/screens_init/login_screen.dart';
-import 'package:monarch/screens/screens_app/tutorial_guide.dart';
+import 'package:monarch/widgets/animated_particles.dart';
+import 'package:monarch/screens/auth/login_screen.dart';
+import 'package:monarch/widgets/tutorial_guide.dart';
 import 'package:monarch/services/database_service.dart';
 import 'package:monarch/services/cache_service.dart';
 import 'package:monarch/services/streak_service.dart';

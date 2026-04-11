@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:monarch/core/theme/rank_themes.dart';
-import 'package:monarch/screens/screens_init/server_select.dart';
+import 'package:monarch/screens/auth/server_select.dart';
 import 'package:monarch/services/auth_service.dart';
 
 
