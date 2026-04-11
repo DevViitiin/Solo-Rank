@@ -1,6 +1,12 @@
 import 'package:firebase_auth/firebase_auth.dart';
 
-/// Serviço responsável pela autenticação de usuários
+/// Serviço de autenticação via Firebase Auth.
+///
+/// Encapsula todas as operações de autenticação do app:
+/// - Criação de conta com email/senha
+/// - Login e logout
+/// - Recuperação de senha por email
+/// - Tratamento de erros com mensagens em português
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
@@ -97,7 +103,10 @@ class AuthService {
     }
   }
 
-  /// Trata exceções do Firebase Auth e retorna mensagens em português
+  /// Converte códigos de erro do Firebase Auth em mensagens amigáveis em português.
+  ///
+  /// Cobre os erros mais comuns: senha fraca, email duplicado, usuário
+  /// não encontrado, erro de rede, etc.
   String _handleAuthException(FirebaseAuthException e) {
     print('FirebaseAuthException: code=${e.code}, message=${e.message}');
     

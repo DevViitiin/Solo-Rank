@@ -26,6 +26,17 @@ const int MAX_CUSTOM_MISSIONS = 7;
 // MISSIONS SCREEN
 // =============================================================================
 
+/// Tela de gerenciamento de missões diárias do Dracoryx.
+///
+/// Permite ao usuário:
+/// - Visualizar missões fixas e customizadas do dia
+/// - Completar missões (com confirmação irreversível)
+/// - Criar e deletar missões customizadas
+/// - Filtrar missões por tipo (Todas, Fixas, Custom)
+///
+/// Integra com [MissionService] para lógica de XP/level/rank,
+/// [MissionToggleController] para proteção contra cliques múltiplos,
+/// e [MissionBatchController] para processamento sequencial.
 class MissionsScreen extends StatefulWidget {
   const MissionsScreen({Key? key}) : super(key: key);
 
@@ -84,6 +95,7 @@ class _MissionsScreenState extends State<MissionsScreen>
   // LOAD
   // =========================================================================
 
+  /// Carrega missões do dia com propagação de recorrentes e cache.
   Future<void> _loadMissions({bool forceRefresh = false}) async {
     setState(() => _loading = true);
     try {
@@ -143,6 +155,7 @@ class _MissionsScreenState extends State<MissionsScreen>
     }
   }
 
+  /// Converte dados brutos do Firebase em modelos tipados [MissionModel].
   void _parseMissions(Map<String, dynamic> data, int userLevel) {
     _fixedMissions.clear();
     _customMissions.clear();
@@ -177,6 +190,7 @@ class _MissionsScreenState extends State<MissionsScreen>
   // TOGGLE COM CONFIRMAÇÃO ← NOVO
   // =========================================================================
 
+  /// Processa o toggle de uma missão com confirmação, animação e batch.
   Future<void> _toggleMission(MissionModel mission) async {
     if (mission.completed) {
       HapticFeedback.lightImpact();
@@ -264,7 +278,7 @@ class _MissionsScreenState extends State<MissionsScreen>
     );
   }
 
-  /// Diálogo de confirmação — missão não pode ser revertida
+  /// Exibe diálogo de confirmação irreversível antes de completar missão.
   Future<bool?> _showCompleteConfirmDialog(
       MissionModel mission, RankTheme theme) {
     final isFixed = mission.type == MissionType.fixed;
@@ -429,6 +443,7 @@ class _MissionsScreenState extends State<MissionsScreen>
   // POPUPS & ANIMAÇÕES
   // =========================================================================
 
+  /// Verifica e exibe popups de conquista (todas fixas, 3+ custom, dia perfeito).
   Future<void> _checkAndShowAchievementPopups() async {
     if (!mounted) return;
     final userProvider = context.read<UserProvider>();
@@ -512,6 +527,7 @@ class _MissionsScreenState extends State<MissionsScreen>
   // DELETE
   // =========================================================================
 
+  /// Deleta uma missão customizada não completada com confirmação.
   Future<void> _deleteCustomMission(String missionId) async {
     final userProvider = context.read<UserProvider>();
     final userId = userProvider.currentUser?.id;

@@ -6,7 +6,14 @@ import 'package:monarch/screens/app/welcome_screen.dart';
 import 'package:monarch/services/database_service.dart';
 import 'package:provider/provider.dart';
 
-/// Tela de Seleção de Servidor após cadastro
+/// Tela de seleção de servidor exibida após o cadastro.
+///
+/// Lista os servidores ativos do mês atual, permitindo ao
+/// novo usuário escolher onde jogar. Após confirmação, cria
+/// o usuário no servidor via [UserProvider] e navega para
+/// [WelcomeScreen] com animação.
+///
+/// Servidores lotados são exibidos mas não selecionáveis.
 class ServerSelectionScreen extends StatefulWidget {
   final String userId;
   final String userName;
@@ -69,6 +76,7 @@ class _ServerSelectionScreenState extends State<ServerSelectionScreen>
     super.dispose();
   }
 
+  /// Carrega servidores ativos e garante existência do servidor do mês.
   Future<void> _loadServers() async {
     setState(() {
       _isLoading = true;
@@ -92,6 +100,7 @@ class _ServerSelectionScreenState extends State<ServerSelectionScreen>
     }
   }
 
+  /// Confirma seleção e cria o usuário no servidor escolhido.
   Future<void> _confirmSelection() async {
     if (_selectedServer == null) {
       _showError('Selecione um servidor');
@@ -352,6 +361,10 @@ class _ServerSelectionScreenState extends State<ServerSelectionScreen>
   }
 }
 
+/// Card visual de um servidor com indicador de ocupação.
+///
+/// Exibe nome do servidor, contagem de jogadores, barra de
+/// progresso de ocupação e badges de status (NOVO, DISPONÍVEL, etc.).
 class _ServerCard extends StatelessWidget {
   final ServerModel server;
   final bool isSelected;

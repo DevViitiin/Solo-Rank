@@ -7,16 +7,18 @@ import 'package:monarch/core/constants/app_constants.dart';
 import 'cache_service.dart';
 import 'dart:async';
 
-/// 🚀 DATABASE SERVICE
+/// Serviço central de acesso ao Firebase Realtime Database.
 ///
-/// ──────────────────────────────────────────────
-/// COMO TESTAR RECORRÊNCIAS EM DATAS DIFERENTES:
+/// Responsável por todas as operações de leitura e escrita no banco:
+/// - CRUD de usuários e missões
+/// - Streams em tempo real para sincronização
+/// - Batch atômico para atualizações consistentes
+/// - Templates de missões recorrentes e propagação diária
+/// - Ranking do servidor com cache
+/// - Gerenciamento de servidores mensais
 ///
-///   DatabaseService.testDate = DateTime(2026, 3, 20); // simular data
-///   DatabaseService.testDate = null;                  // voltar ao normal
-///
-/// Coloque no main.dart antes do runApp().
-/// ──────────────────────────────────────────────
+/// Fornece também a fonte única de data ([now], [todayKey]) para
+/// permitir simulação de datas em desenvolvimento via [testDate].
 class DatabaseService {
   final FirebaseDatabase _database = FirebaseDatabase.instance;
   final _cache = CacheService.instance;
@@ -75,6 +77,10 @@ class DatabaseService {
   // 🔥 STREAMS EM TEMPO REAL
   // =========================================================================
 
+  /// Retorna um stream em tempo real do [UserModel] para o usuário especificado.
+  ///
+  /// Escuta mudanças no nó do Firebase e emite atualizações automáticas.
+  /// O stream é compartilhado (broadcast) e se auto-limpa ao cancelar.
   Stream<UserModel?> getUserStream(String serverId, String userId) {
     final key = '${serverId}_$userId';
     if (_userStreamControllers.containsKey(key)) {
@@ -104,6 +110,9 @@ class DatabaseService {
     return controller.stream;
   }
 
+  /// Retorna um stream em tempo real das missões diárias do usuário.
+  ///
+  /// Emite o Map bruto das missões (fixed + custom) para uma data específica.
   Stream<Map<String, dynamic>?> getDailyMissionsStream(
     String serverId,
     String userId,
@@ -141,6 +150,11 @@ class DatabaseService {
   // 🔥 BATCH ATÔMICO
   // =========================================================================
 
+  /// Executa atualização atômica de missão + usuário em uma única operação.
+  ///
+  /// Garante consistência usando `_database.ref().update()` com todos os
+  /// campos em um único Map. O campo `totalMissionsCompleted` é incrementado
+  /// via [ServerValue.increment] para evitar race conditions.
   Future<void> updateMissionAndUserBatch({
     required String serverId,
     required String userId,
@@ -188,6 +202,10 @@ class DatabaseService {
   // ✅ TEMPLATES DE MISSÕES FIXAS RECORRENTES
   // =========================================================================
 
+  /// Salva um template de missão fixa recorrente no Firebase.
+  ///
+  /// Templates definem missões que se repetem automaticamente conforme
+  /// a [recurrence] configurada. Retorna o ID gerado para o template.
   Future<String> saveFixedMissionTemplate({
     required String serverId,
     required String userId,
@@ -216,6 +234,7 @@ class DatabaseService {
     }
   }
 
+  /// Busca todos os templates de missões fixas ativos do usuário.
   Future<List<Map<String, dynamic>>> getFixedMissionTemplates({
     required String serverId,
     required String userId,
@@ -244,6 +263,7 @@ class DatabaseService {
     }
   }
 
+  /// Desativa um template de missão fixa (soft delete).
   Future<void> deactivateFixedMissionTemplate({
     required String serverId,
     required String userId,
@@ -368,6 +388,9 @@ class DatabaseService {
   // OPERAÇÕES PRINCIPAIS
   // =========================================================================
 
+  /// Busca os dados do usuário diretamente do Firebase.
+  ///
+  /// Retorna `null` se o usuário não existir no servidor.
   Future<UserModel?> getUserFromServer(
     String serverId,
     String userId, {
@@ -384,6 +407,7 @@ class DatabaseService {
     }
   }
 
+  /// Busca o ID do servidor ao qual o usuário pertence.
   Future<String?> getUserServer(String userId,
       {bool forceRefresh = false}) async {
     try {
@@ -395,6 +419,7 @@ class DatabaseService {
     }
   }
 
+  /// Busca as missões diárias (fixed + custom) para uma data específica.
   Future<Map<String, dynamic>?> getDailyMissions(
     String serverId,
     String userId,
@@ -411,6 +436,10 @@ class DatabaseService {
     }
   }
 
+  /// Atualiza campos do usuário no Firebase.
+  ///
+  /// Aplana campos aninhados (stats, attributes) para atualização parcial
+  /// sem sobrescrever dados existentes. Atualiza [lastSeen] automaticamente.
   Future<void> updateUser(
     String serverId,
     String userId,
@@ -445,6 +474,7 @@ class DatabaseService {
     }
   }
 
+  /// Atualiza campos específicos de uma missão diária.
   Future<void> updateDailyMission({
     required String serverId,
     required String userId,
@@ -463,6 +493,9 @@ class DatabaseService {
     }
   }
 
+  /// Adiciona uma nova missão (fixa ou customizada) ao dia especificado.
+  ///
+  /// Retorna o ID gerado para a missão.
   Future<String> addCustomMission({
     required String serverId,
     required String userId,
@@ -498,6 +531,7 @@ class DatabaseService {
     }
   }
 
+  /// Remove uma missão do dia especificado.
   Future<void> removeCustomMission({
     required String serverId,
     required String userId,
@@ -517,6 +551,7 @@ class DatabaseService {
     }
   }
 
+  /// Alias para [removeCustomMission] (compat. retroativa).
   Future<void> deleteDailyMission({
     required String serverId,
     required String userId,
@@ -533,6 +568,7 @@ class DatabaseService {
     );
   }
 
+  /// Edita o nome e XP de uma missão existente.
   Future<void> editMission({
     required String serverId,
     required String userId,
@@ -554,6 +590,7 @@ class DatabaseService {
     }
   }
 
+  /// Fecha todos os stream controllers ativos e libera recursos.
   void dispose() {
     for (final controller in _userStreamControllers.values) {
       controller.close();
@@ -569,6 +606,10 @@ class DatabaseService {
   // SERVIDORES E RANKING
   // =========================================================================
 
+  /// Cria um novo usuário dentro de um servidor.
+  ///
+  /// Registra os dados do usuário, vincula ao servidor via `userServers`
+  /// e incrementa atomicamente o contador de jogadores do servidor.
   Future<void> createUserInServer({
     required String userId,
     required String userName,
@@ -621,6 +662,7 @@ class DatabaseService {
     }
   }
 
+  /// Retorna a lista de servidores ativos, com cache de longa duração.
   Future<List<ServerModel>> getActiveServers(
       {bool forceRefresh = false}) async {
     try {
@@ -636,6 +678,7 @@ class DatabaseService {
     }
   }
 
+  /// Busca servidores ativos diretamente do Firebase (sem cache).
   Future<List<ServerModel>> _fetchActiveServers() async {
     final snapshot = await _serversRef.get();
     if (!snapshot.exists || snapshot.value == null) return [];
@@ -660,6 +703,9 @@ class DatabaseService {
     return servers;
   }
 
+  /// Garante que existe um servidor para o mês atual.
+  ///
+  /// Se não existir, cria automaticamente com capacidade para 1000 jogadores.
   Future<void> ensureCurrentMonthServer() async {
     try {
       final now = DatabaseService.now;
@@ -681,6 +727,9 @@ class DatabaseService {
     }
   }
 
+  /// Retorna a posição do usuário no ranking do servidor.
+  ///
+  /// Conta quantos usuários têm mais XP e retorna posição (1-based).
   Future<int> getUserRankingPosition({
     required String serverId,
     required String userId,
@@ -706,6 +755,9 @@ class DatabaseService {
     }
   }
 
+  /// Retorna página do ranking do servidor, ordenado por XP decrescente.
+  ///
+  /// Utiliza cache de curta duração para evitar queries excessivas.
   Future<List<UserModel>> getServerRanking(
     String serverId, {
     int page = 1,
@@ -722,6 +774,7 @@ class DatabaseService {
         [];
   }
 
+  /// Busca uma página do ranking diretamente do Firebase (sem cache).
   Future<List<UserModel>> _fetchRankingPage(
     String serverId,
     int page,
@@ -763,6 +816,7 @@ class DatabaseService {
     }
   }
 
+  /// Converte número do mês (1-12) para nome em português.
   String _getMonthName(int month) {
     const months = [
       'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
@@ -771,6 +825,9 @@ class DatabaseService {
     return months[month - 1];
   }
 
+  /// Cria a estrutura inicial de missões diárias para um usuário.
+  ///
+  /// Popula as missões fixas padrão a partir de [AppConstants.fixedMissionCategories].
   Future<void> createDailyMissions(
     String serverId,
     String userId,

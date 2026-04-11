@@ -1,6 +1,17 @@
+/// Definição dos temas visuais por rank do sistema Dracoryx.
+///
+/// Cada rank (E → SSS) possui um [RankTheme] completo com cores,
+/// gradientes e efeitos de glow neon. A classe [RankThemes] fornece
+/// acesso estático a todos os temas e um método de lookup por nome.
+library;
+
 import 'package:flutter/material.dart';
 
-/// Tema visual para cada rank do sistema
+/// Modelo de tema visual associado a um rank específico.
+///
+/// Contém todas as cores, gradientes e efeitos necessários para
+/// estilizar a interface de acordo com o rank do usuário.
+/// Cada rank possui uma paleta única que define a identidade visual.
 class RankTheme {
   final String name;
   final Color primary;
@@ -40,9 +51,15 @@ class RankTheme {
   });
 }
 
-/// Temas para cada rank
+/// Repositório estático de temas para todos os ranks do sistema.
+///
+/// Fornece acesso aos 8 temas predefinidos (E, D, C, B, A, S, SS, SSS)
+/// e um método [getTheme] para lookup dinâmico por nome de rank.
 class RankThemes {
-  /// Método estático para obter o tema baseado no rank
+  /// Retorna o [RankTheme] correspondente ao [rank] informado.
+  ///
+  /// O [rank] é case-insensitive. Retorna o tema E como fallback
+  /// para ranks desconhecidos.
   static RankTheme getTheme(String rank) {
     switch (rank.toUpperCase()) {
       case 'E':

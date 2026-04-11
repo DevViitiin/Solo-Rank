@@ -8,7 +8,12 @@ import 'package:monarch/providers/user_provider.dart';
 import 'package:provider/provider.dart';
 import 'register_screen.dart';
 
-/// Tela de Login
+/// Tela de login com email e senha do Dracoryx.
+///
+/// Valida campos, autentica via [AuthService], carrega dados do
+/// usuário via [UserProvider] e navega para [MainNavigation].
+/// Inclui animações de entrada (fade + slide) e feedback visual
+/// de sucesso/erro via SnackBar.
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
 
@@ -71,6 +76,7 @@ class _LoginScreenState extends State<LoginScreen>
     super.dispose();
   }
 
+  /// Executa login: valida campos, autentica e navega para home.
   Future<void> _login() async {
     // Validação dos campos
     if (_emailController.text.trim().isEmpty || _passwordController.text.isEmpty) {
@@ -137,6 +143,7 @@ class _LoginScreenState extends State<LoginScreen>
     }
   }
 
+  /// Exibe SnackBar de erro com ícone e ação de dismiss.
   void _showError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -177,6 +184,7 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 
+  /// Exibe SnackBar de sucesso com ícone verde.
   void _showSuccess(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -210,6 +218,7 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 
+  /// Navega para [MainNavigation] substituindo a rota atual.
   void _goToHome() {
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
@@ -218,6 +227,7 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 
+  /// Navega para a tela de cadastro.
   void _goToRegister() {
     Navigator.push(
       context,

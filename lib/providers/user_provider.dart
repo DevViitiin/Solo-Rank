@@ -11,6 +11,17 @@ import 'package:monarch/core/constants/app_constants.dart';
 import 'dart:async';
 
 
+/// Provider central de estado do usuário logado.
+///
+/// Gerencia o ciclo de vida completo do usuário autenticado:
+/// - **Carregamento**: busca servidor e configura stream real-time
+/// - **Sincronização**: escuta mudanças no Firebase via stream
+/// - **Streak**: verifica e reseta streaks no login
+/// - **Atributos**: atualiza atributos individuais
+/// - **Cache**: invalida caches de ranking e usuário
+/// - **Progresso**: calcula XP para próximo nível e barra de progresso
+///
+/// Notifica listeners ([ChangeNotifier]) quando dados mudam.
 class UserProvider with ChangeNotifier {
   final DatabaseService _dbService = DatabaseService();
   final AuthService _authService = AuthService();
@@ -38,6 +49,10 @@ class UserProvider with ChangeNotifier {
 
   // ================= CORE =================
 
+  /// Carrega o usuário atual do Firebase e configura stream real-time.
+  ///
+  /// Busca o servidor do usuário, configura listener de mudanças,
+  /// e verifica se o streak precisa ser resetado.
   Future<void> loadUser({bool forceRefresh = false}) async {
     _isLoading = true;
 
@@ -87,6 +102,10 @@ class UserProvider with ChangeNotifier {
     }
   }
 
+  /// Configura stream de dados do usuário e aguarda primeiro update.
+  ///
+  /// Timeout de 10 segundos para o primeiro update do stream.
+  /// Após receber dados, verifica reset de bestStreak.
   Future<void> _setupUserListenerAndWait(String serverId, String userId) async {
     await _userStreamSubscription?.cancel();
 
@@ -156,6 +175,7 @@ class UserProvider with ChangeNotifier {
         '✅ loadUser() completo - currentUser: ${_currentUser?.name ?? "null"}');
   }
 
+  /// Verifica se o streak precisa ser resetado (ex: dia perdido).
   Future<void> _checkAndResetBestStreak(
     String serverId,
     String userId,
@@ -175,6 +195,7 @@ class UserProvider with ChangeNotifier {
     }
   }
 
+  /// Cria um novo usuário em um servidor e recarrega os dados.
   Future<void> createUserInServer(
     String userId,
     String userName,
@@ -202,6 +223,7 @@ class UserProvider with ChangeNotifier {
     }
   }
 
+  /// Atualiza campos do usuário no Firebase (adiciona lastSeen automaticamente).
   Future<void> updateUser(Map<String, dynamic> updates) async {
     if (_currentUser == null || _currentServerId == null) return;
 
@@ -214,6 +236,7 @@ class UserProvider with ChangeNotifier {
     );
   }
 
+  /// Faz logout completo: cancela stream, limpa estado e desautentica.
   Future<void> logout() async {
     try {
       AppConstants.debugLog('🚪 Iniciando logout...');
@@ -240,6 +263,10 @@ class UserProvider with ChangeNotifier {
 
   // ================= ATUALIZAÇÃO LOCAL =================
 
+  /// Atualiza o modelo do usuário localmente sem persistir no Firebase.
+  ///
+  /// Notifica listeners apenas se houve mudança significativa
+  /// (level, rank, XP ou atributos).
   void updateLocalUser(UserModel updatedUser) {
     AppConstants.debugLog('📝 UserProvider: Atualizando usuário local...');
 
@@ -258,6 +285,7 @@ class UserProvider with ChangeNotifier {
     }
   }
 
+  /// Busca dados frescos do Firebase e atualiza o estado local.
   Future<void> refreshUserData({bool force = false}) async {
     if (_currentUser == null || _currentServerId == null) return;
 
@@ -288,6 +316,7 @@ class UserProvider with ChangeNotifier {
 
   // ================= STREAK =================
 
+  /// Atualiza o streak do usuário e verifica milestones (7, 15, 30 dias).
   Future<void> updateStreak(int newStreak) async {
     if (_currentUser == null || _currentServerId == null) return;
 
@@ -316,6 +345,7 @@ class UserProvider with ChangeNotifier {
 
   // ================= LOGIN DIÁRIO =================
 
+  /// Registra login diário e verifica se o streak precisa ser resetado.
   Future<void> registerDailyLogin() async {
     if (_currentUser == null || _currentServerId == null) return;
 
@@ -334,6 +364,7 @@ class UserProvider with ChangeNotifier {
     }
   }
 
+  /// Calcula e retorna o streak atual do usuário.
   Future<StreakCalculationResult?> getCurrentStreak() async {
     final StreakService _streakService = StreakService.instance;
 
@@ -350,6 +381,7 @@ class UserProvider with ChangeNotifier {
     }
   }
 
+  /// Força atualização do streak (usado ao completar todas as fixas).
   Future<void> forceUpdateStreak() async {
     final StreakService _streakService = StreakService.instance;
 
@@ -378,6 +410,10 @@ class UserProvider with ChangeNotifier {
 
   // ================= ATRIBUTOS =================
 
+  /// Atualiza um atributo específico pelo nome (aceita pt-BR e en).
+  ///
+  /// Nomes aceitos: study/estudo, discipline/disciplina, evolution/evolução,
+  /// shape, habit/hábito.
   Future<void> updateAttribute(String name, int value) async {
     if (_currentUser == null) return;
 
@@ -417,7 +453,7 @@ class UserProvider with ChangeNotifier {
 
   // ================= CACHE =================
 
-  /// FIX: invalida todas as chaves reais usadas pelo ranking_screen
+  /// Invalida cache de ranking (top3, page1, posição do usuário).
   void invalidateRankingCache() {
     if (_currentServerId == null) return;
 
@@ -437,6 +473,7 @@ class UserProvider with ChangeNotifier {
     AppConstants.debugLog('✅ Cache do ranking invalidado');
   }
 
+  /// Invalida todos os caches relevantes (usuário, missões, ranking).
   void invalidateCache() {
     if (_currentUser == null || _currentServerId == null) return;
 
@@ -451,6 +488,7 @@ class UserProvider with ChangeNotifier {
     invalidateRankingCache();
   }
 
+  /// Limpa todo o estado do provider (stream, user, server, erro).
   void clearUser() {
     _userStreamSubscription?.cancel();
     _userStreamSubscription = null;
@@ -462,6 +500,7 @@ class UserProvider with ChangeNotifier {
 
   // ================= PROGRESSO =================
 
+  /// XP restante para o próximo nível (0 se nível máximo).
   int get xpForNextLevel {
     if (_currentUser == null) return 0;
 
@@ -472,6 +511,7 @@ class UserProvider with ChangeNotifier {
     return (nextLevelXp - _currentUser!.totalXp).clamp(0, nextLevelXp);
   }
 
+  /// Progresso do nível atual como fração (0.0 a 1.0).
   double get levelProgress {
     if (_currentUser == null) return 0.0;
 
@@ -489,6 +529,7 @@ class UserProvider with ChangeNotifier {
 
   // ================= HELPERS =================
 
+  /// Atualiza flag de loading e notifica se não for carga inicial.
   void _setLoading(bool value) {
     _isLoading = value;
     if (!_isInitialLoad) {
@@ -496,6 +537,7 @@ class UserProvider with ChangeNotifier {
     }
   }
 
+  /// Atualiza mensagem de erro e notifica se não for carga inicial.
   void _setError(String? value) {
     _error = value;
     if (!_isInitialLoad) {

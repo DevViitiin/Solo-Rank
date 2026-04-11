@@ -6,11 +6,14 @@ import 'package:monarch/screens/app/main_navigation.dart';
 import 'package:provider/provider.dart';
 import 'dart:math' as math;
 
-/// WelcomeScreen - Gerencia a entrada no app
+/// Tela de boas-vindas com animação épica de entrada.
 ///
-/// Se showAnimation = true: Mostra animação épica DEPOIS vai para MainNavigation
-/// Se showAnimation = false: Vai DIRETO para MainNavigation
-
+/// Comportamento condicional:
+/// - Se [showAnimation] = `true`: exibe animação de rank (avatar, nome,
+///   frase motivacional) antes de navegar para [MainNavigation].
+/// - Se [showAnimation] = `false`: renderiza [MainNavigation] diretamente.
+///
+/// A frase motivacional e o ícone variam conforme o rank do usuário.
 class WelcomeScreen extends StatefulWidget {
   final bool showAnimation;
 
@@ -171,6 +174,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
     }
   }
 
+  /// Navega para [MainNavigation] substituindo a rota atual.
   void _continueToHome() {
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
@@ -520,7 +524,9 @@ class _WelcomeScreenState extends State<WelcomeScreen>
   }
 }
 
-/// Widget separado para partícula para evitar rebuilds do pai
+/// Partícula animada individual com fade pulsante.
+///
+/// Widget separado para evitar rebuilds desnecessários do pai.
 class _Particle extends StatefulWidget {
   final double size;
   final int duration;

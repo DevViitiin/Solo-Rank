@@ -1,3 +1,8 @@
+/// Modelo principal do usuário no sistema Dracoryx.
+///
+/// Representa o perfil completo de um jogador, incluindo rank, nível,
+/// XP acumulado, estatísticas e estado do onboarding.
+/// Persistido no Firebase Realtime Database.
 class UserModel {
   final String id;
   final String name;
@@ -111,6 +116,9 @@ class UserModel {
     }
   }
 
+  /// Converte um valor dinâmico para [int], aceitando int, double e String.
+  ///
+  /// Retorna `null` se a conversão não for possível.
   static int? _parseInt(dynamic value) {
     if (value == null) return null;
     if (value is int) return value;
@@ -119,6 +127,9 @@ class UserModel {
     return null;
   }
 
+  /// Converte um valor dinâmico para [DateTime].
+  ///
+  /// Aceita strings ISO 8601. Retorna [DateTime.now] como fallback.
   static DateTime _parseDateTime(dynamic value) {
     if (value == null) return DateTime.now();
     if (value is String) {
@@ -131,6 +142,7 @@ class UserModel {
     return DateTime.now();
   }
 
+  /// Cria uma cópia do [UserModel] com os campos alterados.
   UserModel copyWith({
     String? name,
     String? email,
@@ -165,6 +177,10 @@ class UserModel {
 // UserStats
 // =============================================================================
 
+/// Estatísticas agregadas do usuário.
+///
+/// Agrupa streak atual, melhor streak, total de missões completadas
+/// e os [UserAttributes] (disciplina, evolução, estudo, shape, hábito).
 class UserStats {
   final int currentStreak;
   final int bestStreak;
@@ -178,6 +194,7 @@ class UserStats {
     required this.attributes,
   });
 
+  /// Cria estatísticas iniciais zeradas para um novo usuário.
   factory UserStats.initial() {
     return UserStats(
       currentStreak: 0,
@@ -196,6 +213,9 @@ class UserStats {
     };
   }
 
+  /// Cria [UserStats] a partir de um Map do Firebase.
+  ///
+  /// Em caso de erro de parsing, retorna [UserStats.initial].
   factory UserStats.fromMap(Map<String, dynamic> map) {
     try {
       return UserStats(
@@ -212,6 +232,7 @@ class UserStats {
     }
   }
 
+  /// Converte um valor dinâmico para [int], retornando 0 como fallback.
   static int _parseInt(dynamic value) {
     if (value == null) return 0;
     if (value is int) return value;
@@ -220,6 +241,7 @@ class UserStats {
     return 0;
   }
 
+  /// Cria uma cópia do [UserStats] com os campos alterados.
   UserStats copyWith({
     int? currentStreak,
     int? bestStreak,
@@ -240,6 +262,14 @@ class UserStats {
 // UserAttributes
 // =============================================================================
 
+/// Atributos de evolução do usuário (escala 0-100 cada).
+///
+/// Os cinco atributos representam diferentes dimensões de progresso:
+/// - **study**: evolução em aprendizado e estudo
+/// - **discipline**: constância e comprometimento
+/// - **evolution**: progresso geral
+/// - **shape**: fitness e saúde física
+/// - **habit**: formação de hábitos positivos
 class UserAttributes {
   final int study;
   final int discipline;
@@ -255,6 +285,7 @@ class UserAttributes {
     required this.habit,
   });
 
+  /// Cria atributos iniciais zerados para um novo usuário.
   factory UserAttributes.initial() {
     return UserAttributes(
       study: 0,
@@ -275,6 +306,9 @@ class UserAttributes {
     };
   }
 
+  /// Cria [UserAttributes] a partir de um Map do Firebase.
+  ///
+  /// Em caso de erro de parsing, retorna [UserAttributes.initial].
   factory UserAttributes.fromMap(Map<String, dynamic> map) {
     try {
       return UserAttributes(
@@ -289,6 +323,7 @@ class UserAttributes {
     }
   }
 
+  /// Converte um valor dinâmico para [int], retornando 0 como fallback.
   static int _parseInt(dynamic value) {
     if (value == null) return 0;
     if (value is int) return value;
@@ -297,6 +332,7 @@ class UserAttributes {
     return 0;
   }
 
+  /// Cria uma cópia do [UserAttributes] com os campos alterados.
   UserAttributes copyWith({
     int? study,
     int? discipline,
@@ -313,8 +349,10 @@ class UserAttributes {
     );
   }
 
+  /// Soma total de todos os pontos de atributos.
   int get totalPoints => study + discipline + evolution + shape + habit;
 
+  /// Converte para Map<String, int> para uso em cálculos de atributos.
   Map<String, int> toAttributeMap() {
     return {
       'study': study,

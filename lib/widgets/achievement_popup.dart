@@ -6,6 +6,11 @@ import 'package:provider/provider.dart';
 import 'dart:math' as math;
 
 
+/// Popup fullscreen de conquista com animações épicas.
+///
+/// Exibe título, descrição, emoji animado e bônus de atributos.
+/// Auto-dismiss após 5 segundos. Marca o popup como mostrado
+/// via [PopupService] para controle de frequência diária.
 class AchievementPopup extends StatefulWidget {
   final String userId;
   final String popupId;
@@ -119,6 +124,7 @@ class _AchievementPopupState extends State<AchievementPopup>
     super.dispose();
   }
   
+  /// Anima saída e marca popup como mostrado antes de fechar.
   Future<void> _dismiss() async {
     if (_isDismissed) return;
     _isDismissed = true;
@@ -137,7 +143,7 @@ class _AchievementPopupState extends State<AchievementPopup>
     }
   }
   
-  /// ✅ ATUALIZADO: Marca o popup como mostrado usando os novos métodos
+  /// Marca o popup como mostrado no [PopupService] para evitar repetição.
   Future<void> _markPopupAsShown() async {
     final popupService = PopupService.instance;
     
@@ -504,6 +510,7 @@ class _AchievementPopupState extends State<AchievementPopup>
   }
 }
 
+/// Modelo de bônus de atributo exibido no popup de conquista.
 class AttributeBonus {
   final String name;
   final String icon;
@@ -516,6 +523,7 @@ class AttributeBonus {
   });
 }
 
+/// [CustomPainter] de partículas decorativas para o popup de conquista.
 class ParticlePainter extends CustomPainter {
   final Animation<double> animation;
   final Color color;
@@ -552,13 +560,17 @@ class ParticlePainter extends CustomPainter {
   bool shouldRepaint(ParticlePainter oldDelegate) => true;
 }
 
-/// ═══════════════════════════════════════════════════════════════════════════
-/// ✅ HELPERS ATUALIZADOS PARA MOSTRAR POPUPS
-/// ═══════════════════════════════════════════════════════════════════════════
-
+/// Helpers estáticos para exibir popups de conquista com verificação.
+///
+/// Cada método verifica via [PopupService] se o popup já foi mostrado
+/// hoje antes de exibi-lo. Inclui popups para:
+/// - Todas as missões fixas completas
+/// - 3+ missões customizadas completas
+/// - Todas as missões customizadas completas
+/// - Dia perfeito (todas fixas + todas custom)
 class AchievementPopups {
   
-  /// ✅ ATUALIZADO: Todas as Fixas Completas (variável: 3, 4 ou 5)
+  /// Exibe popup de todas as missões fixas completas (3, 4 ou 5).
   static Future<void> showAllFixedComplete(
     BuildContext context,
     String userId,
@@ -608,7 +620,7 @@ class AchievementPopups {
     );
   }
   
-  /// ✅ NOVO: 3 Customizadas Completas
+  /// Exibe popup de 3 missões customizadas completas.
   static Future<void> show3CustomComplete(
     BuildContext context,
     String userId,
@@ -654,7 +666,7 @@ class AchievementPopups {
     );
   }
   
-  /// ✅ ATUALIZADO: Todas Customizadas Completas (7)
+  /// Exibe popup de todas as missões customizadas completas (7).
   static Future<void> showAllCustomComplete(
     BuildContext context,
     String userId,

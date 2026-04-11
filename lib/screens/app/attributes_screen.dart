@@ -6,6 +6,15 @@ import 'package:monarch/providers/user_provider.dart';
 import 'package:provider/provider.dart';
 import 'dart:math' as math;
 
+/// Tela de visualização dos 5 atributos do usuário.
+///
+/// Exibe os atributos (Disciplina, Hábito, Estudo, Shape, Evolução) em:
+/// - **Radar chart** (teia de aranha) com animação de escala
+/// - **Estatísticas rápidas** (total, média, maior)
+/// - **Barras de progresso** animadas com shimmer
+/// - **Dicas de evolução** para cada atributo
+///
+/// Suporta pull-to-refresh para atualizar dados do Firebase.
 class AttributesScreen extends StatefulWidget {
   const AttributesScreen({Key? key}) : super(key: key);
 
@@ -86,6 +95,7 @@ class _AttributesScreenState extends State<AttributesScreen>
     super.dispose();
   }
 
+  /// Atualiza dados de atributos do Firebase com feedback visual.
   Future<void> _refreshData() async {
     if (_isRefreshing) return;
     setState(() => _isRefreshing = true);

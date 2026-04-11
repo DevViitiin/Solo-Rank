@@ -4,13 +4,16 @@ import 'package:monarch/core/theme/rank_themes.dart';
 import 'package:monarch/providers/user_provider.dart';
 import 'package:provider/provider.dart';
 
-// =============================================================================
-// TUTORIAL GUIDE — versão informativa (sem criação de missão)
-//
-// Aberto manualmente pelo botão na HomeScreen.
-// Exibe 4 páginas explicando o app e fecha com um botão "Entendido!".
-// =============================================================================
-
+/// Guia tutorial informativo de 4 páginas do Dracoryx.
+///
+/// Aberto manualmente pelo botão na [HomeScreen].
+/// Explica o funcionamento do app em páginas sequenciais:
+/// 1. Boas-vindas e visão geral
+/// 2. Sistema de missões (fixas e customizadas)
+/// 3. Atributos e evolução
+/// 4. Ranking e servidores
+///
+/// Fecha com botão "Entendido!" na última página.
 class TutorialGuide extends StatefulWidget {
   const TutorialGuide({Key? key}) : super(key: key);
 
@@ -250,6 +253,7 @@ class _TutorialGuideState extends State<TutorialGuide>
 // MODELOS INTERNOS
 // =============================================================================
 
+/// Modelo de highlight (ícone + texto) para as páginas do tutorial.
 class _Hi {
   final IconData icon;
   final String text;
@@ -260,6 +264,7 @@ class _Hi {
 // PÁGINA INFORMATIVA
 // =============================================================================
 
+/// Página informativa individual do tutorial com ícone, título e highlights.
 class _InfoPage extends StatelessWidget {
   final RankTheme theme;
   final IconData icon;
@@ -388,6 +393,7 @@ class _InfoPage extends StatelessWidget {
 // BOTÃO COM GRADIENTE
 // =============================================================================
 
+/// Botão com gradiente reutilizável para ações do tutorial.
 class _GradientButton extends StatelessWidget {
   final RankTheme theme;
   final String label;
@@ -434,10 +440,7 @@ class _GradientButton extends StatelessWidget {
   }
 }
 
-// =============================================================================
-// HELPER — abre o tutorial como bottom sheet de tela cheia
-// =============================================================================
-
+/// Abre o tutorial como rota fullscreen com transição de fade.
 void showTutorialGuide(BuildContext context) {
   HapticFeedback.mediumImpact();
   Navigator.of(context).push(

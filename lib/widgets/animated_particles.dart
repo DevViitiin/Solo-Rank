@@ -2,6 +2,11 @@ import 'package:flutter/material.dart';
 import 'dart:math' as math;
 
 
+/// Fundo animado com partículas flutuantes via [CustomPaint].
+///
+/// Renderiza [particleCount] partículas que se movem para baixo
+/// continuamente, configuráveis em tamanho, opacidade e velocidade.
+/// Usa [AnimationController] com repeat para atualizar o canvas.
 class AnimatedParticlesBackground extends StatefulWidget {
   final Widget child;
   final Color particleColor;
@@ -49,6 +54,7 @@ class _AnimatedParticlesBackgroundState
     )..repeat();
   }
   
+  /// Gera lista de partículas com posições e tamanhos aleatórios.
   void _generateParticles() {
     final random = math.Random();
     _particles = List.generate(
@@ -96,7 +102,9 @@ class _AnimatedParticlesBackgroundState
   }
 }
 
-/// Modelo de partícula
+/// Modelo de dados de uma partícula individual.
+///
+/// Armazena posição (x, y normalizado 0-1), tamanho, velocidade e opacidade.
 class Particle {
   double x;
   double y;
@@ -113,7 +121,10 @@ class Particle {
   });
 }
 
-/// Painter para desenhar as partículas
+/// [CustomPainter] que desenha partículas como círculos no canvas.
+///
+/// Atualiza a posição Y de cada partícula a cada frame para simular
+/// movimento descendente contínuo com wrap-around.
 class ParticlesPainter extends CustomPainter {
   final List<Particle> particles;
   final double animation;

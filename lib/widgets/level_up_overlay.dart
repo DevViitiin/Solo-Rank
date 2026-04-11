@@ -3,8 +3,15 @@ import 'package:monarch/core/theme/rank_themes.dart';
 import 'package:confetti/confetti.dart';
 import 'dart:math';
 
-/// Widget de animação de Level Up
-/// Mostra quando o usuário sobe de nível com efeitos especiais
+/// Overlay fullscreen de animação de Level Up.
+///
+/// Exibe quando o usuário sobe de nível, com:
+/// - Confetti animado via [ConfettiController]
+/// - Badge de nível com gradiente do rank
+/// - Frase motivacional baseada no nível
+/// - Card de mudança de posição no ranking (se aplicável)
+///
+/// Auto-dismiss após 4 segundos ou ao clicar em "CONTINUAR".
 class LevelUpAnimation extends StatefulWidget {
   final int newLevel;
   final String? newRank;
@@ -43,6 +50,7 @@ class _LevelUpAnimationState extends State<LevelUpAnimation>
     _startAnimations();
   }
 
+  /// Configura AnimationControllers de escala, fade e slide.
   void _setupAnimations() {
     _scaleController = AnimationController(
       duration: const Duration(milliseconds: 800),
@@ -88,6 +96,7 @@ class _LevelUpAnimationState extends State<LevelUpAnimation>
     );
   }
 
+  /// Inicia sequência escalonada de animações com auto-dismiss.
   void _startAnimations() {
     Future.delayed(const Duration(milliseconds: 100), () {
       _scaleController.forward();
@@ -104,6 +113,7 @@ class _LevelUpAnimationState extends State<LevelUpAnimation>
     });
   }
 
+  /// Reverte animações e chama [onComplete] após 400ms.
   void _closeAnimation() {
     _scaleController.reverse();
     _fadeController.reverse();
@@ -304,6 +314,7 @@ class _LevelUpAnimationState extends State<LevelUpAnimation>
     );
   }
 
+  /// Constrói card dourado indicando subida no ranking.
   Widget _buildRankingCard(RankTheme theme) {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -330,6 +341,7 @@ class _LevelUpAnimationState extends State<LevelUpAnimation>
     );
   }
 
+  /// Retorna frase motivacional baseada na faixa de nível.
   String _getMotivationalMessage(int level) {
     if (level <= 10) return 'Continue assim! Você está no caminho certo!';
     if (level <= 25) return 'Sua dedicação está virando poder!';
@@ -360,7 +372,7 @@ class _LevelUpAnimationState extends State<LevelUpAnimation>
   }
 }
 
-/// Helper
+/// Exibe o overlay de Level Up como dialog modal.
 void showLevelUpAnimation(
   BuildContext context, {
   required int newLevel,

@@ -4,6 +4,17 @@ import 'package:monarch/controllers/transaction_controller.dart';
 import 'package:monarch/models/user_model.dart';
 import 'package:monarch/services/database_service.dart';
 
+/// Serviço gerenciador de atributos do sistema Dracoryx.
+///
+/// Coordena a atualização dos 5 atributos (Estudo, Disciplina, Evolução,
+/// Shape, Hábito) com garantia de idempotência via [AttributeTransactionController].
+///
+/// Cada método público:
+/// 1. Gera um transaction ID único para evitar duplicidade
+/// 2. Executa a lógica de cálculo dentro de uma transação
+/// 3. Salva no Firebase via [_updateAttributesSafely]
+///
+/// Atributos são limitados a [AppConstants.maxAttributePoints] (100).
 class AttributesManagerService {
   final DatabaseService _dbService = DatabaseService();
   final AttributeTransactionController _txController = 
@@ -13,7 +24,9 @@ class AttributesManagerService {
   static const int MAX_CUSTOM_MISSIONS = 7; 
   static const int TOTAL_MISSIONS = MAX_FIXED_MISSIONS + MAX_CUSTOM_MISSIONS;
   
-  /// ✅ Inicializar antes de usar
+  /// Inicializa o controller de transações de atributos.
+  ///
+  /// Deve ser chamado antes de qualquer operação de atributo.
   Future<void> init(String serverId, String userId) async {
     await _txController.init(serverId, userId);
   }
@@ -22,6 +35,9 @@ class AttributesManagerService {
   // ESTUDO - +1 por missão de estudo (fixa ou customizada)
   // =========================================================================
   
+  /// Incrementa +1 em Estudo ao completar uma missão de estudo.
+  ///
+  /// Idempotente: a mesma missão no mesmo dia não incrementa duas vezes.
   Future<int> updateStudyAttribute({
     required String serverId,
     required String userId,
@@ -68,6 +84,9 @@ class AttributesManagerService {
   // SHAPE - +1 por missão de treino (fixa ou customizada)
   // =========================================================================
   
+  /// Incrementa +1 em Shape ao completar uma missão de fitness.
+  ///
+  /// Idempotente: a mesma missão no mesmo dia não incrementa duas vezes.
   Future<int> updateShapeAttribute({
     required String serverId,
     required String userId,
@@ -114,6 +133,9 @@ class AttributesManagerService {
   // DISCIPLINA - +2 ao completar todas as fixas (1x por dia)
   // =========================================================================
   
+  /// Incrementa +2 em Disciplina ao completar todas as missões fixas.
+  ///
+  /// Executado no máximo 1x por dia via transaction ID.
   Future<int> updateDisciplineOnAllFixed({
     required String serverId,
     required String userId,
@@ -166,6 +188,9 @@ class AttributesManagerService {
   // HÁBITO - +1 ao completar todas as fixas (1x por dia)
   // =========================================================================
   
+  /// Incrementa +1 em Hábito ao completar todas as missões fixas.
+  ///
+  /// Executado no máximo 1x por dia via transaction ID.
   Future<int> updateHabitOnAllFixed({
     required String serverId,
     required String userId,
@@ -217,6 +242,9 @@ class AttributesManagerService {
   // HÁBITO - +1 ao completar 3 customizadas (1x por dia)
   // =========================================================================
   
+  /// Incrementa +1 em Hábito ao completar 3 missões customizadas.
+  ///
+  /// Executado no máximo 1x por dia via transaction ID.
   Future<int> updateHabitOn3Custom({
     required String serverId,
     required String userId,
@@ -268,6 +296,9 @@ class AttributesManagerService {
   // HÁBITO - +2 ao completar todas customizadas (1x por dia)
   // =========================================================================
   
+  /// Incrementa +2 em Hábito ao completar todas as missões customizadas.
+  ///
+  /// Executado no máximo 1x por dia via transaction ID.
   Future<int> updateHabitOnAllCustom({
     required String serverId,
     required String userId,
@@ -319,6 +350,10 @@ class AttributesManagerService {
   // EVOLUÇÃO - Wrapper unificado para level/rank up
   // =========================================================================
   
+  /// Wrapper unificado para bônus de evolução em level/rank up.
+  ///
+  /// Delega para [updateEvolutionOnLevelUp] (+1) e/ou
+  /// [updateEvolutionOnRankUp] (+5) conforme aplicável.
   Future<Map<String, int>> updateAttributesOnLevelOrRankUp({
     required String serverId,
     required String userId,
@@ -366,6 +401,7 @@ class AttributesManagerService {
   // EVOLUÇÃO - +1 ao subir de level
   // =========================================================================
   
+  /// Incrementa +1 em Evolução ao subir de level.
   Future<Map<String, int>> updateEvolutionOnLevelUp({
     required String serverId,
     required String userId,
@@ -412,6 +448,7 @@ class AttributesManagerService {
   // EVOLUÇÃO - +5 ao subir de rank
   // =========================================================================
   
+  /// Incrementa +5 em Evolução ao subir de rank.
   Future<Map<String, int>> updateEvolutionOnRankUp({
     required String serverId,
     required String userId,
@@ -458,7 +495,10 @@ class AttributesManagerService {
   // HELPERS - DETECÇÃO DE TIPO DE MISSÃO
   // =========================================================================
   
-  /// Verifica se a missão é relacionada a estudo
+  /// Verifica se o nome da missão indica conteúdo de estudo.
+  ///
+  /// Usa busca por keywords em português cobrindo áreas acadêmicas,
+  /// programação, idiomas e preparatórios.
   bool _isStudyRelatedMission(String missionName) {
     final lowerName = missionName.toLowerCase();
     
@@ -482,7 +522,10 @@ class AttributesManagerService {
     return studyKeywords.any((keyword) => lowerName.contains(keyword));
   }
   
-  /// Verifica se a missão é relacionada a fitness
+  /// Verifica se o nome da missão indica atividade física.
+  ///
+  /// Usa busca por keywords em português cobrindo exercícios,
+  /// esportes, musculação e atividades ao ar livre.
   bool _isFitnessRelatedMission(String missionName) {
     final lowerName = missionName.toLowerCase();
     
@@ -504,7 +547,9 @@ class AttributesManagerService {
     return fitnessKeywords.any((keyword) => lowerName.contains(keyword));
   }
   
-  /// Retorna o rank anterior
+  /// Retorna o rank imediatamente anterior ao [currentRank].
+  ///
+  /// Retorna 'E' se já estiver no rank mínimo.
   String _getPreviousRank(String currentRank) {
     const ranks = ['E', 'D', 'C', 'B', 'A', 'S', 'SS', 'SSS'];
     final index = ranks.indexOf(currentRank);
@@ -515,7 +560,10 @@ class AttributesManagerService {
   // HELPERS - SALVAMENTO SEGURO
   // =========================================================================
   
-  /// ✅ Salva atributos de forma segura, preservando outros valores
+  /// Salva atributos no Firebase preservando valores não alterados.
+  ///
+  /// Constrói um [UserAttributes] combinando valores atuais com as
+  /// [updates], e persiste via [DatabaseService.updateUser].
   Future<void> _updateAttributesSafely(
     String serverId,
     String userId,

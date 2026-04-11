@@ -8,22 +8,23 @@ import 'package:monarch/services/streak_service.dart';
 import 'package:monarch/services/cache_service.dart';
 import 'package:intl/intl.dart';
 
-/// 🚀 MISSION SERVICE V14 - AJUSTADO PARA MODELO EXISTENTE
-/// 
-/// ✅ NOVO SISTEMA DE RECOMPENSAS:
-/// 
-/// 📌 MISSÕES FIXAS (3-5):
-/// - Obrigatórias para streak
-/// - Completar TODAS: +2 Disciplina, +1 Hábito, Streak +1
-/// - Falhar: Streak zerado
-/// 
-/// 📌 MISSÕES CUSTOMIZADAS (5-7):
-/// - Não afetam streak
-/// - Treino: +1 Shape
-/// - Estudo: +1 Estudo
-/// - Outras: XP
-/// - Bônus: 3 completas (+1 Háb), Todas (+2 Háb)
-
+/// Serviço orquestrador de missões do sistema Dracoryx.
+///
+/// Coordena todo o fluxo de toggle de missões, incluindo:
+/// - Cálculo de XP, level e rank ao completar missões
+/// - Atualização atômica via [DatabaseService.updateMissionAndUserBatch]
+/// - Cálculo de atributos via [AttributesManagerService]
+/// - Atualização de streak via [StreakService] (quando todas fixas completas)
+/// - Invalidação de cache de ranking
+///
+/// **Regras de recompensa:**
+/// - Missões fixas (3-5): obrigatórias para streak. Todas completas:
+///   +2 Disciplina, +1 Hábito, Streak +1. Falha: streak zerado.
+/// - Missões customizadas (5-7): não afetam streak.
+///   Treino: +1 Shape. Estudo: +1 Estudo.
+///   Bônus: 3 completas (+1 Hábito), Todas (+2 Hábito).
+///
+/// Implementado como Singleton via [MissionService.instance].
 class MissionService {
   static final MissionService _instance = MissionService._();
   static MissionService get instance => _instance;
@@ -47,6 +48,9 @@ class MissionService {
   static const int MIN_CUSTOM_MISSIONS = 5;
   static const int MAX_CUSTOM_MISSIONS = 7;
 
+  /// Inicializa o serviço e suas dependências ([AttributesManagerService]).
+  ///
+  /// Seguro para chamar múltiplas vezes (idempotente).
   Future<void> init(String serverId, String userId) async {
     if (_initialized) return;
 
@@ -61,6 +65,19 @@ class MissionService {
   // TOGGLE DE MISSÃO
   // =========================================================================
 
+  /// Executa o toggle completo de uma missão (marcar como concluída).
+  ///
+  /// Fluxo em 8 passos:
+  /// 1. Calcular XP e verificar level/rank up
+  /// 2. Salvar missão + usuário atomicamente
+  /// 3. Verificar estado das missões do dia
+  /// 4. Calcular atributos ganhos
+  /// 5. Aplicar evolução (se level/rank up)
+  /// 6. Atualizar streak (se todas fixas completas)
+  /// 7. Combinar todas as mudanças de atributos
+  /// 8. Retornar estado final via [MissionToggleResult]
+  ///
+  /// Missões não podem ser desmarcadas ([newState] deve ser `true`).
   Future<MissionToggleResult> toggleMission({
     required String serverId,
     required String userId,
@@ -354,6 +371,7 @@ class MissionService {
   // FIX: invalida as chaves exatas usadas pelo ranking_screen
   // =========================================================================
 
+  /// Invalida as chaves de cache do ranking para forçar dados frescos.
   void _invalidateRankingCache(String serverId, String userId) {
     debugPrint('🗑️ MissionService: Invalidando cache do ranking...');
     _cache.invalidate('ranking_${serverId}_top3');
@@ -366,6 +384,10 @@ class MissionService {
   // NOVA LÓGICA DE ATRIBUTOS
   // =========================================================================
 
+  /// Calcula mudanças de atributos baseado no tipo de missão e estado do dia.
+  ///
+  /// Aplica regras de estudo (+1), shape (+1), disciplina (+2 se todas fixas),
+  /// e hábito (bônus por fixas completas e customizadas atingindo thresholds).
   Future<Map<String, int>> _calculateAttributeChanges({
     required String serverId,
     required String userId,
@@ -488,6 +510,7 @@ class MissionService {
   // UTILITÁRIOS
   // =========================================================================
 
+  /// Busca e parseia o estado atual de todas as missões do dia.
   Future<DailyMissionsState> _getDailyMissionsState(
     String serverId,
     String userId,
@@ -525,6 +548,7 @@ class MissionService {
     );
   }
 
+  /// Gera mensagem de sucesso contextualizada ao estado atual das missões.
   String _getSuccessMessage(MissionModel mission, DailyMissionsState state) {
     if (state.allDailyCompleted) {
       return '🎉 Todas as missões completadas!';
@@ -541,6 +565,7 @@ class MissionService {
     return 'Missão concluída!';
   }
 
+  /// Converte dados dinâmicos do Firebase para `Map<String, dynamic>` seguro.
   Map<String, dynamic> _safeMapConversion(dynamic data) {
     if (data == null) return {};
     if (data is Map<String, dynamic>) return data;
@@ -560,6 +585,7 @@ class MissionService {
   // CÁLCULOS
   // =========================================================================
 
+  /// Calcula o nível do usuário baseado no XP total acumulado.
   int _calculateLevel(int totalXp) {
     for (int level = 1; level <= 100; level++) {
       final xpNeeded = _totalXpForLevel(level);
@@ -570,6 +596,10 @@ class MissionService {
     return 100;
   }
 
+  /// Determina o rank (E→SSS) baseado no XP total.
+  ///
+  /// Thresholds: E(<1000), D(1000), C(3000), B(6000),
+  /// A(10000), S(15000), SS(25000), SSS(40000).
   String _calculateRank(int totalXp) {
     if (totalXp >= 40000) return 'SSS';
     if (totalXp >= 25000) return 'SS';
@@ -581,6 +611,7 @@ class MissionService {
     return 'E';
   }
 
+  /// Converte nome de rank para valor numérico (0–7) para comparação.
   int _rankValue(String rank) {
     const values = {
       'E': 0, 'D': 1, 'C': 2, 'B': 3,
@@ -589,6 +620,7 @@ class MissionService {
     return values[rank] ?? 0;
   }
 
+  /// Retorna o XP total acumulado necessário para alcançar um [level].
   int _totalXpForLevel(int level) {
     int total = 0;
     for (int i = 1; i <= level; i++) {
@@ -597,6 +629,7 @@ class MissionService {
     return total;
   }
 
+  /// Retorna o XP necessário para subir do [level]-1 para o [level].
   int _xpForLevel(int level) {
     if (level <= 1) return 0;
     return (level * 100) + ((level - 1) * 50);
@@ -607,6 +640,10 @@ class MissionService {
 // RESULTADO
 // =============================================================================
 
+/// Resultado do toggle de uma missão.
+///
+/// Contém flags de sucesso, level/rank up, XP ganho, mudanças de
+/// atributos e o estado atualizado do usuário e missões.
 class MissionToggleResult {
   final bool success;
   final bool blocked;
@@ -632,5 +669,6 @@ class MissionToggleResult {
     this.missionsState,
   });
 
+  /// Retorna `true` se houve alterações em algum atributo.
   bool get hasAttributeChanges => attributeChanges.isNotEmpty;
 }
