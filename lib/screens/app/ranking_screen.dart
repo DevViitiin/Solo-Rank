@@ -1,51 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:monarch/constants/app_constants.dart';
+import 'package:monarch/core/constants/app_constants.dart';
 import 'package:monarch/core/theme/rank_themes.dart';
+import 'package:monarch/helpers/ranking_helpers.dart';
 import 'package:monarch/providers/user_provider.dart';
-import 'package:monarch/screens/screens_app/animated_particles.dart';
-import 'package:monarch/screens/screens_app/ranking_profile_screen.dart';
+import 'package:monarch/widgets/animated_particles.dart';
+import 'package:monarch/screens/app/ranking_profile_screen.dart';
 import 'package:monarch/services/database_service.dart';
 import 'package:monarch/services/cache_service.dart';
 import 'package:monarch/models/user_model.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:math' as math;
-
-// ============================================================================
-// SERVIÇO DE BOAS-VINDAS
-// ============================================================================
-
-class RankingWelcomeService {
-  static const String _keyWelcomeShown = 'ranking_welcome_shown_v2';
-
-  static Future<bool> shouldShowWelcome() async {
-    final prefs = await SharedPreferences.getInstance();
-    final hasShown = prefs.getBool(_keyWelcomeShown) ?? false;
-    if (!hasShown) {
-      await prefs.setBool(_keyWelcomeShown, true);
-      return true;
-    }
-    return false;
-  }
-}
-
-// ============================================================================
-// HELPERS DE SERIALIZAÇÃO
-// ============================================================================
-
-Map<String, dynamic> _userToJson(UserModel u) => {'id': u.id, ...u.toMap()};
-
-UserModel _userFromJson(dynamic e) {
-  final map = e as Map<String, dynamic>;
-  final id = map['id']?.toString() ?? '';
-  return UserModel.fromMap(id, map);
-}
-
-List<Map<String, dynamic>> _usersToEncodable(List<UserModel>? list) =>
-    list?.map(_userToJson).toList() ?? [];
-
-List<UserModel> _usersFromJson(dynamic json) =>
-    (json as List).map(_userFromJson).toList();
 
 // ============================================================================
 // RANKING SCREEN
@@ -182,8 +146,8 @@ class _RankingScreenState extends State<RankingScreen>
                 _dbService.getServerRanking(serverId, page: 1, pageSize: _top3Size),
             cacheDuration: const Duration(minutes: 15),
             forceRefresh: forceRefresh,
-            toEncodable: (list) => _usersToEncodable(list),
-            fromJson: (json) => _usersFromJson(json),
+            toEncodable: (list) => usersToEncodable(list),
+            fromJson: (json) => usersFromJson(json),
           ) ??
           [];
 
@@ -193,8 +157,8 @@ class _RankingScreenState extends State<RankingScreen>
                 _dbService.getServerRanking(serverId, page: 1, pageSize: _pageSize),
             cacheDuration: CacheService.CACHE_SHORT,
             forceRefresh: forceRefresh,
-            toEncodable: (list) => _usersToEncodable(list),
-            fromJson: (json) => _usersFromJson(json),
+            toEncodable: (list) => usersToEncodable(list),
+            fromJson: (json) => usersFromJson(json),
           ) ??
           [];
 
@@ -412,8 +376,8 @@ class _RankingScreenState extends State<RankingScreen>
             fetchFunction: () => _dbService.getServerRanking(serverId,
                 page: nextPage, pageSize: _pageSize),
             cacheDuration: CacheService.CACHE_SHORT,
-            toEncodable: (list) => _usersToEncodable(list),
-            fromJson: (json) => _usersFromJson(json),
+            toEncodable: (list) => usersToEncodable(list),
+            fromJson: (json) => usersFromJson(json),
           ) ??
           [];
 

@@ -7,7 +7,7 @@ import '../models/user_model.dart';
 import '../services/database_service.dart';
 import '../services/auth_service.dart';
 import '../services/cache_service.dart';
-import '../constants/app_constants.dart';
+import 'package:monarch/core/constants/app_constants.dart';
 import 'dart:async';
 
 

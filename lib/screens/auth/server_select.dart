@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:monarch/core/theme/rank_themes.dart';
 import 'package:monarch/models/server_model.dart';
 import 'package:monarch/providers/user_provider.dart';
-import 'package:monarch/screens/screens_app/welcome_screen.dart';
+import 'package:monarch/screens/app/welcome_screen.dart';
 import 'package:monarch/services/database_service.dart';
 import 'package:provider/provider.dart';
 
