@@ -15,6 +15,7 @@ class UserModel {
   final DateTime lastSeen;
   final UserStats stats;
   final bool terms;
+  bool isPremium = false;
   final bool onboardingCompleted; // ← NOVO
 
   UserModel({
@@ -38,6 +39,7 @@ class UserModel {
     required String name,
     required String email,
     required bool terms,
+    required bool isPremium,
   }) {
     final now = DateTime.now();
     return UserModel(
@@ -168,7 +170,8 @@ class UserModel {
       createdAt: createdAt ?? this.createdAt,
       lastSeen: lastSeen ?? this.lastSeen,
       stats: stats ?? this.stats,
-      onboardingCompleted: onboardingCompleted ?? this.onboardingCompleted, // ← NOVO
+      onboardingCompleted:
+          onboardingCompleted ?? this.onboardingCompleted, // ← NOVO
     );
   }
 }

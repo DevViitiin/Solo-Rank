@@ -212,6 +212,7 @@ class UserProvider with ChangeNotifier {
         userEmail: userEmail,
         serverId: serverId,
         termsAccepted: terms,
+        IsPremium: false,
       );
 
       await loadUser(forceRefresh: true);

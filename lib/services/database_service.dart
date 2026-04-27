@@ -615,7 +615,7 @@ class DatabaseService {
     required String userName,
     required String userEmail,
     required String serverId,
-    bool termsAccepted = false,
+    bool termsAccepted = false, required bool IsPremium,
   }) async {
     try {
       final newUser = UserModel.newUser(
@@ -623,6 +623,7 @@ class DatabaseService {
         name: userName,
         email: userEmail,
         terms: termsAccepted,
+        isPremium: IsPremium,
       );
 
       final updates = <String, dynamic>{};
